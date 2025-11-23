@@ -60,7 +60,7 @@ Architecture visualizations:
 - **Framework:** Oxide/Umod for Rust
 - **Version:** 1.0.0
 - **Architecture:** Modular (9 core modules + 2 security systems)
-- **Modules:** 9 core modules + 2 security systems (11 total, down from 13)
+- **Modules:** 11 total systems (9 core + 2 security, down from 13 originally)
 - **Weapons:** 10 pre-configured
 - **Skins:** 8+ with automatic store integration
 - **Armor Pieces:** 8 across 5 body slots
