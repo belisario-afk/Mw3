@@ -981,15 +981,12 @@ new ArmorItem
     Name = "New Attachment",
     Slot = "optic",  // "barrel", "optic", "mag", "grip"
     MaxLevel = 5,
-    StatModifiers = new Dictionary<string, float>
-    {
-        ["accuracy"] = 1.3f,  // +30% accuracy
-        ["damage"] = 0.95f    // -5% damage
-    },
-    VFXTag = "optic_glow",
-    SFXTag = "optic_beep"
+    VFXTag = "optic_glow",    // Visual effect identifier
+    SFXTag = "optic_beep"     // Sound effect identifier
 }
 ```
+
+**Note:** Attachments are cosmetic/visual modifications. VFXTag and SFXTag are used for visual and sound effects only.
 
 #### Step 2: Add to Store Display (Lines 3026-3037)
 ```csharp
