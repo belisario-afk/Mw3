@@ -40,17 +40,15 @@ KillaDome (Main Plugin Class)
 │   ├── PluginConfig (JSON config)
 │   ├── GunConfig (weapon definitions)
 │   └── OutfitConfig (armor definitions)
-├── Core Systems (11 Modules)
+├── Core Systems (8 Modules)
 │   ├── DomeManager (match management)
 │   ├── LobbyUI (user interface)
 │   ├── LoadoutEditor (weapon customization)
 │   ├── AttachmentSystem (weapon modifications)
-│   ├── WeaponProgression (leveling system)
 │   ├── VFXManager (visual effects)
 │   ├── SFXManager (sound effects)
 │   ├── ForgeStationSystem (upgrade station)
-│   ├── BloodTokenEconomy (currency)
-│   ├── StoreAPI (shop system)
+│   ├── BloodTokenEconomy (currency and store)
 │   └── SaveManager (persistence)
 ├── Security Layer
 │   ├── AntiExploit (rate limiting)
@@ -146,56 +144,19 @@ AttachmentDefinition {
     string Name;                             // "Silencer"
     string Slot;                             // "barrel"
     int MaxLevel;                            // 5
-    Dictionary<string, float> StatModifiers; // effects
     string VFXTag;                           // visual effect
     string SFXTag;                           // sound effect
 }
 ```
 
 **Built-in Attachments:**
-1. **Silencer** (barrel)
-   - Noise reduction: 80%
-   - Damage penalty: -5%
-   
-2. **Extended Magazine** (mag)
-   - Capacity: +50%
-   - Reload speed penalty: -10%
-   
-3. **Reflex Sight** (optic)
-   - Accuracy boost: +20%
+1. **Silencer** (barrel) - Aesthetic/VFX modification
+2. **Extended Magazine** (mag) - Aesthetic/VFX modification
+3. **Reflex Sight** (optic) - Aesthetic/VFX modification
 
-**Calculation System:**
-```csharp
-CalculateWeaponStats(weaponId, attachments)
-→ Base stats × attachment modifiers → Final stats
-```
+**Note:** Attachments are visual/cosmetic modifications without stat changes.
 
-### 5. WeaponProgression (Lines 3757-3841)
-**Purpose:** Weapon leveling and upgrade system  
-**Configuration:**
-- Max weapon level: 10 (configurable)
-- Level-based stat improvements
-- XP/kill progression (implied)
-
-**Weapon Definitions:**
-```csharp
-WeaponDefinition {
-    string Id;                        // "ak47"
-    string Name;                      // "AK-47"
-    int MaxLevel;                     // 10
-    Dictionary<string, float> BaseStats; // damage, fire_rate, accuracy
-}
-```
-
-**Weapons Defined:**
-1. **AK-47**: Damage 35, Fire Rate 0.13s, Accuracy 75%
-2. **M249**: Damage 30, Fire Rate 0.1s, Accuracy 70%
-
-**Upgrade Methods:**
-- `GetWeaponLevel(steamId, weaponId)` - Current level
-- `UpgradeWeapon(steamId, weaponId, cost)` - Level up weapon
-
-### 6. VFXManager (Lines 3845-3860)
+### 5. VFXManager (Lines 3845-3860)
 **Purpose:** Visual effects system (stub implementation)  
 **Method:**
 ```csharp
@@ -204,7 +165,7 @@ PlayVFX(player, vfxTag, position)
 ```
 **Note:** Requires client-side companion mod to render effects
 
-### 7. SFXManager (Lines 3864-3879)
+### 6. SFXManager (Lines 3864-3879)
 **Purpose:** Sound effects system (stub implementation)  
 **Method:**
 ```csharp
@@ -213,8 +174,8 @@ PlaySFX(player, sfxTag)
 ```
 **Note:** Requires client-side companion mod to play sounds
 
-### 8. ForgeStationSystem (Lines 3883-3932)
-**Purpose:** Weapon and attachment upgrade station  
+### 7. ForgeStationSystem (Lines 3883-3932)
+**Purpose:** Attachment upgrade station  
 **Upgrade Cost Formula:**
 ```csharp
 cost = 100 × (currentLevel + 1)
@@ -230,20 +191,29 @@ cost = 100 × (currentLevel + 1)
 **Integration:**
 - Uses `BloodTokenEconomy` for payment
 - Uses `AttachmentSystem` for definitions
-- Uses `WeaponProgression` for leveling
 
-### 9. BloodTokenEconomy (Lines 3936-3975)
-**Purpose:** Virtual currency system  
+### 8. BloodTokenEconomy (Lines 3936-3975)
+**Purpose:** Virtual currency system and store purchases  
 **Token Sources:**
 - Starting balance: 500 (configurable)
 - Per kill: 10 tokens (configurable)
-- Store purchases (real money integration)
+- Store purchases with Blood Tokens
 
 **Key Methods:**
 ```csharp
 AwardTokens(steamId, amount)     // Give tokens
 SpendTokens(steamId, amount)     // Deduct tokens (with validation)
 GetBalance(steamId)              // Check balance
+PurchaseItem(steamId, itemId, cost) // Purchase items from store
+```
+
+**Store Purchase Flow:**
+```
+Player clicks BUY
+→ killadome.purchase <itemId> <cost>
+→ BloodTokenEconomy.SpendTokens()
+→ Add item to PlayerProfile.OwnedSkins
+→ SaveManager.SavePlayerProfile()
 ```
 
 **Safety Features:**
@@ -251,29 +221,7 @@ GetBalance(steamId)              // Check balance
 - Atomic operations (no race conditions)
 - Debug logging for all transactions
 
-### 10. StoreAPI (Lines 3979-4023)
-**Purpose:** In-game store and Tebex integration  
-**Features:**
-1. **Internal Store**: Blood Token purchases
-2. **Tebex Integration**: Real money transactions (stub)
-
-**Purchase Flow:**
-```
-Player clicks BUY
-→ killadome.purchase <itemId> <cost>
-→ StoreAPI.PurchaseItem()
-→ BloodTokenEconomy.SpendTokens()
-→ Add item to PlayerProfile.OwnedSkins
-→ SaveManager.SavePlayerProfile()
-```
-
-**Tebex Integration:**
-```csharp
-ProcessTebexPurchase(steamId, packageId, transactionId)
-// TODO: Verify with Tebex API using secret key
-```
-
-### 11. SaveManager (Lines 4027-4098)
+### 9. SaveManager (Lines 4027-4098)
 **Purpose:** Player data persistence (JSON-based)  
 **Storage Location:** `oxide/data/KillaDome/{steamid}.json`
 
@@ -296,7 +244,7 @@ ProcessTebexPurchase(steamId, packageId, transactionId)
   "TotalDeaths": 32,
   "Loadouts": [...],
   "OwnedSkins": [...],
-  "WeaponLevels": {...},
+  "OwnedArmor": [...],
   "AttachmentLevels": {...},
   "LastUpdated": "2024-..."
 }
@@ -335,7 +283,6 @@ class PlayerProfile {
     List<Loadout> Loadouts;                  // Saved loadouts (usually 1)
     List<string> OwnedSkins;                 // Unlocked skins
     List<string> OwnedArmor;                 // Unlocked armor pieces
-    Dictionary<string, int> WeaponLevels;    // Weapon progression
     Dictionary<string, int> AttachmentLevels;// Attachment progression
     DateTime LastUpdated;                    // Last save timestamp
 }
@@ -566,9 +513,6 @@ killadome.storepage next  // Next page
   ],
   "Starting Blood Tokens": 500,
   "Tokens Per Kill": 10,
-  "Enable Tebex Integration": false,
-  "Tebex Secret Key": "YOUR_SECRET_KEY_HERE",
-  "Max Weapon Level": 10,
   "Max Attachment Level": 5,
   "UI Update Throttle MS": 100,
   "Auto Save Interval Seconds": 300.0,
@@ -579,10 +523,9 @@ killadome.storepage next  // Next page
 **Configuration Categories:**
 1. **Spawn Locations** (Vector3)
 2. **Economy** (token values)
-3. **Progression** (max levels)
+3. **Progression** (attachment levels)
 4. **Performance** (throttle, auto-save)
-5. **Integration** (Tebex)
-6. **Debugging** (logging)
+5. **Debugging** (logging)
 
 **Loading Pattern:**
 ```csharp

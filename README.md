@@ -11,7 +11,7 @@ I have completed a comprehensive deep analysis of **KillaDome.cs**, a sophistica
 ### 1. **KILLADOME_ANALYSIS.md** (43KB - Comprehensive Technical Guide)
 The complete technical reference covering:
 - **Architecture**: System design, module breakdown, design patterns
-- **11 Core Modules**: Detailed analysis of each system (DomeManager, LobbyUI, LoadoutEditor, AttachmentSystem, WeaponProgression, VFX/SFX Managers, ForgeStation, BloodTokenEconomy, StoreAPI, SaveManager, AntiExploit, Telemetry)
+- **8 Core Modules**: Detailed analysis of each system (DomeManager, LobbyUI, LoadoutEditor, AttachmentSystem, VFX/SFX Managers, ForgeStation, BloodTokenEconomy, SaveManager, AntiExploit, Telemetry)
 - **Data Structures**: PlayerSession, PlayerProfile, Loadout, GunDefinition, SkinDefinition, ArmorItem, etc.
 - **UI System**: Complete CUI implementation with positioning, colors, and tab structure
 - **Configuration**: Plugin config, gun config, outfit config with all settings
@@ -59,8 +59,8 @@ Architecture visualizations:
 - **Programming Language:** C# (for Oxide/Umod framework)
 - **Framework:** Oxide/Umod for Rust
 - **Version:** 1.0.0
-- **Architecture:** Modular (11 independent systems)
-- **Modules:** 11 major systems
+- **Architecture:** Modular (8 independent systems)
+- **Modules:** 8 major systems
 - **Weapons:** 10 pre-configured
 - **Skins:** 8+ with automatic store integration
 - **Armor Pieces:** 8 across 5 body slots
@@ -80,18 +80,18 @@ Architecture visualizations:
 1. **DomeManager** - Match management, queue system, spawn control
 2. **LobbyUI** (2150-3588) - Complete CUI interface with 5 tabs
 3. **LoadoutEditor** - Weapon/attachment selection and customization
-4. **AttachmentSystem** - Stat modifiers, VFX/SFX integration
-5. **WeaponProgression** - 10-level weapon upgrade system
-6. **VFXManager** - Visual effects (stub for client-side companion)
-7. **SFXManager** - Sound effects (stub for client-side companion)
-8. **ForgeStationSystem** - Upgrade station with cost calculation
-9. **BloodTokenEconomy** - Virtual currency (award/spend/balance)
-10. **StoreAPI** - Shop system with Tebex integration support
-11. **SaveManager** - JSON persistence with atomic writes
+4. **AttachmentSystem** - Attachment management and VFX/SFX integration
+5. **VFXManager** - Visual effects (stub for client-side companion)
+6. **SFXManager** - Sound effects (stub for client-side companion)
+7. **ForgeStationSystem** - Upgrade station with cost calculation
+8. **BloodTokenEconomy** - Virtual currency (award/spend/balance) and store purchases
+9. **SaveManager** - JSON persistence with atomic writes
+10. **AntiExploit** - Rate limiting and security
+11. **TelemetrySystem** - Event tracking and statistics
 
 ### Security Features
 - **Rate Limiting**: 5 actions/second per player (configurable)
-- **Input Validation**: Balance checks, ownership checks, level caps
+- **Input Validation**: Balance checks, ownership checks
 - **Permission System**: Admin and VIP permissions via Oxide
 - **Data Integrity**: Atomic file writes, exception handling, corruption detection
 
@@ -266,7 +266,6 @@ For future updates to this plugin, follow this workflow:
 - **UI Rebuilding**: Consider partial updates instead of full rebuild
 - **Object Pooling**: Pool CuiElementContainer objects
 - **String Building**: Use StringBuilder for concatenation
-- **Cache**: Cache calculated weapon stats
 
 ### Metrics (Estimated)
 - **Memory per Player**: ~50-100KB (session + profile)

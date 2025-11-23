@@ -179,13 +179,10 @@ oxide/config/KillaDome.json
   ],
   "Starting Blood Tokens": 500,
   "Tokens Per Kill": 10,
-  "Max Weapon Level": 10,
   "Max Attachment Level": 5,
   "UI Update Throttle MS": 100,
   "Auto Save Interval Seconds": 300.0,
-  "Enable Debug Logging": false,
-  "Enable Tebex Integration": false,
-  "Tebex Secret Key": "YOUR_KEY"
+  "Enable Debug Logging": false
 }
 ```
 
@@ -344,10 +341,6 @@ oxide/data/KillaDome/{steamid}.json
     "metal.facemask",
     "metal.plate.torso"
   ],
-  "WeaponLevels": {
-    "ak47": 5,
-    "m249": 3
-  },
   "AttachmentLevels": {
     "silencer": 2,
     "reflex": 1

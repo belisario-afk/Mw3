@@ -32,7 +32,7 @@
     ▼                           ▼
 ┌────────────────────────┐  ┌──────────────────────────┐
 │   CORE SYSTEMS         │  │   SECURITY LAYER         │
-│   (11 Modules)         │  │                          │
+│   (8 Modules)          │  │                          │
 └────────────────────────┘  └──────────────────────────┘
 ```
 
@@ -58,23 +58,22 @@
         │                    │                   │
    ┌────▼──────────────┐    │             ┌─────▼──────┐
    │  LoadoutEditor    │    │             │  Player    │
-   │  StoreAPI         │    │             │  Profile   │
-   │  ForgeStation     │    │             └────────────┘
-   └───────────────────┘    │
+   │  ForgeStation     │    │             │  Profile   │
+   └───────────────────┘    │             └────────────┘
                             │
         ┌───────────────────┴──────────────────┐
         │                                       │
         ▼                                       ▼
    ┌──────────────┐                      ┌────────────┐
-   │  Weapon      │◄─────────────────────┤  Token     │
-   │  Progression │                      │  Economy   │
+   │  Attachment  │                      │  Token     │
+   │   System     │                      │  Economy   │
    └──────┬───────┘                      └─────┬──────┘
           │                                    │
-          │uses                                │uses
-          │                                    │
+          │uses                                │handles
+          │                                    │purchases
    ┌──────▼───────┐                      ┌────▼──────┐
-   │  Attachment  │                      │  Store    │
-   │   System     │                      │   API     │
+   │  Attachment  │                      │  Save     │
+   │   System     │                      │  Manager  │
    └──────────────┘                      └───────────┘
           │
           │applies to
@@ -213,7 +212,7 @@ killadome.purchase <itemId> <cost>
      │       │
      │       └─── YES ──► Continue
      │
-     ├──► Process Purchase (StoreAPI)
+     ├──► Process Purchase (BloodTokenEconomy)
      │       │
      │       ├─► BloodTokenEconomy.SpendTokens()
      │       │      │
@@ -399,7 +398,6 @@ PlayerProfile.json Structure:
 │                                             │
 │ - OwnedSkins: List<string> ──┐             │
 │ - OwnedArmor: List<string>   │  Unlocks   │
-│ - WeaponLevels: Dict         │             │
 │ - AttachmentLevels: Dict ────┘             │
 │                                             │
 │ - LastUpdated: DateTime                    │
