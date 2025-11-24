@@ -2550,6 +2550,7 @@ namespace Oxide.Plugins
                             Image = { Color = "0.6 0.4 1.0 0.6" },
                             RectTransform = { AnchorMin = "0 0", AnchorMax = "0.015 1" }
                         }, $"SkinCard_{i}");
+                    }
                     
                     // Skin image - using workshop skin ID for display
                     string skinDisplayName = skinId == "0" ? "Default" : $"Skin {skinId}";
@@ -2632,20 +2633,20 @@ namespace Oxide.Plugins
                 string selectedCategory = session.SelectedAttachmentCategory ?? "scopes";
                 string[] categories = { "SCOPES", "BARREL", "UNDERBARREL" };
                 
-                for (int i = 0; i < categories.Length; i++)
+                for (int categoryIndex = 0; categoryIndex < categories.Length; categoryIndex++)
                 {
-                    float xMin = 0.03f + (i * 0.323f);
+                    float xMin = 0.03f + (categoryIndex * 0.323f);
                     float xMax = xMin + 0.31f;
                     
-                    bool isSelected = categories[i].ToLower() == selectedCategory || 
-                                     (categories[i] == "BARREL" && selectedCategory == "silencers");
+                    bool isSelected = categories[categoryIndex].ToLower() == selectedCategory || 
+                                     (categories[categoryIndex] == "BARREL" && selectedCategory == "silencers");
                     
-                    string categoryCommand = categories[i] == "BARREL" ? "silencers" : categories[i].ToLower();
+                    string categoryCommand = categories[categoryIndex] == "BARREL" ? "silencers" : categories[categoryIndex].ToLower();
                     
                     container.Add(new CuiButton
                     {
                         Button = { Command = $"killadome.attachcat {categoryCommand}", Color = isSelected ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.15 0.9" },
-                        Text = { Text = categories[i], FontSize = 9, Align = TextAnchor.MiddleCenter, Color = isSelected ? "1 1 1 1" : "0.6 0.6 0.6 1" },
+                        Text = { Text = categories[categoryIndex], FontSize = 9, Align = TextAnchor.MiddleCenter, Color = isSelected ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                         RectTransform = { AnchorMin = $"{xMin} 0.91", AnchorMax = $"{xMax} 0.95" }
                     }, "AttachmentsPanel");
                 }
