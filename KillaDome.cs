@@ -416,8 +416,7 @@ namespace Oxide.Plugins
             [JsonProperty("Daily Token Refill Enabled")]
             public bool DailyRefillEnabled { get; set; } = true;
             
-            [JsonProperty("Max Attachment Level")]
-            public int MaxAttachmentLevel { get; set; } = 5;
+
             
             [JsonProperty("UI Update Throttle MS")]
             public int UIUpdateThrottleMS { get; set; } = 100;
@@ -1958,7 +1957,7 @@ namespace Oxide.Plugins
         {
             public ulong SteamID { get; set; }
             public List<Loadout> Loadouts { get; set; }
-            public Dictionary<string, int> AttachmentLevels { get; set; }
+
             public List<string> OwnedSkins { get; set; }
             public List<string> OwnedGuns { get; set; } // List of owned gun IDs
             public List<string> OwnedArmor { get; set; } // List of owned armor shortnames
@@ -1973,7 +1972,7 @@ namespace Oxide.Plugins
             public PlayerProfile()
             {
                 Loadouts = new List<Loadout>();
-                AttachmentLevels = new Dictionary<string, int>();
+
                 OwnedSkins = new List<string>();
                 OwnedGuns = new List<string>();
                 OwnedArmor = new List<string>();
@@ -3830,7 +3829,7 @@ namespace Oxide.Plugins
                     "UI Update Throttle: 100ms",
                     "Auto-Save Interval: 5 minutes",
                     "Max Weapon Level: 10",
-                    "Max Attachment Level: 5"
+                    ""
                 };
                 
                 for (int i = 0; i < settings.Length; i++)
@@ -4045,26 +4044,9 @@ namespace Oxide.Plugins
             
             public bool UpgradeAttachment(ulong steamId, string attachmentId)
             {
-                var session = _plugin.GetSession(steamId);
-                if (session == null) return false;
-                
-                int currentLevel = 0;
-                session.Profile.AttachmentLevels.TryGetValue(attachmentId, out currentLevel);
-                
-                if (currentLevel >= _config.MaxAttachmentLevel)
-                {
-                    return false;
-                }
-                
-                int cost = CalculateUpgradeCost(currentLevel);
-                
-                if (!_economy.SpendTokens(steamId, cost))
-                {
-                    return false;
-                }
-                
-                session.Profile.AttachmentLevels[attachmentId] = currentLevel + 1;
-                return true;
+                // Attachments are now cosmetic only (VFX/SFX tags)
+                // No progression or upgrading needed
+                return false;
             }
         }
         
