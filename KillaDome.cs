@@ -3175,12 +3175,12 @@ namespace Oxide.Plugins
                         RectTransform = { AnchorMin = $"0.02 {yMin}", AnchorMax = $"0.98 {yMax}" }
                     }, "BaseGunsSection", cardName);
                     
-                    // Preview box
+                    // Preview box (MADE EVEN BIGGER)
                     string previewName = $"StorePreviewBaseGun_{i}";
                     container.Add(new CuiPanel
                     {
                         Image = { Color = "0.08 0.08 0.12 1" },
-                        RectTransform = { AnchorMin = "0.05 0.10", AnchorMax = "0.30 0.90" }
+                        RectTransform = { AnchorMin = "0.05 0.10", AnchorMax = "0.45 0.90" }
                     }, cardName, previewName);
                     
                     // Try to add image
@@ -3205,30 +3205,30 @@ namespace Oxide.Plugins
                     container.Add(new CuiLabel
                     {
                         Text = { Text = item.Name, FontSize = 10, Align = TextAnchor.UpperLeft, Color = "1 1 1 1" },
-                        RectTransform = { AnchorMin = "0.35 0.55", AnchorMax = "0.95 0.85" }
+                        RectTransform = { AnchorMin = "0.48 0.65", AnchorMax = "0.95 0.85" }
                     }, cardName);
                     
                     // Shortname
                     container.Add(new CuiLabel
                     {
                         Text = { Text = item.Shortname, FontSize = 8, Align = TextAnchor.UpperLeft, Color = "0.6 0.6 0.6 1" },
-                        RectTransform = { AnchorMin = "0.35 0.35", AnchorMax = "0.95 0.55" }
+                        RectTransform = { AnchorMin = "0.48 0.48", AnchorMax = "0.95 0.65" }
                     }, cardName);
                     
-                    // Cost with coin icon
+                    // Cost with coin icon ABOVE button
                     bool canAfford = session.Profile.Tokens >= item.Cost;
                     container.Add(new CuiLabel
                     {
-                        Text = { Text = $"◆ {item.Cost}", FontSize = 10, Align = TextAnchor.MiddleLeft, Color = canAfford ? "1 0.8 0 1" : "0.6 0.3 0.3 1" },
-                        RectTransform = { AnchorMin = "0.35 0.10", AnchorMax = "0.70 0.30" }
+                        Text = { Text = $"◆ {item.Cost}", FontSize = 11, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 0.8 0 1" : "0.6 0.3 0.3 1" },
+                        RectTransform = { AnchorMin = "0.48 0.30", AnchorMax = "0.95 0.45" }
                     }, cardName);
                     
-                    // Purchase button
+                    // Purchase button (below price)
                     container.Add(new CuiButton
                     {
                         Button = { Color = canAfford ? "0.2 0.6 0.2 0.9" : "0.3 0.3 0.3 0.5", Command = canAfford ? $"killadome.buygun {item.Id}" : "" },
-                        Text = { Text = "BUY", FontSize = 9, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
-                        RectTransform = { AnchorMin = "0.72 0.10", AnchorMax = "0.95 0.30" }
+                        Text = { Text = "BUY", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
+                        RectTransform = { AnchorMin = "0.48 0.10", AnchorMax = "0.95 0.28" }
                     }, cardName);
                 }
                 
@@ -3522,12 +3522,12 @@ namespace Oxide.Plugins
                         RectTransform = { AnchorMin = $"{xMin} {yMin}", AnchorMax = $"{xMax} {yMax}" }
                     }, "SkinsStoreSection", cardName);
                     
-                    // Skin preview image
+                    // Skin preview image (MADE BIGGER)
                     string imageKey = $"{session.SelectedGunForSkins}_skin_{skinId}";
                     container.Add(new CuiPanel
                     {
                         Image = { Color = "0.08 0.08 0.12 1" },
-                        RectTransform = { AnchorMin = "0.10 0.45", AnchorMax = "0.90 0.88" }
+                        RectTransform = { AnchorMin = "0.05 0.40", AnchorMax = "0.95 0.88" }
                     }, cardName, $"{cardName}_preview");
                     
                     if (_plugin.ImageLibrary != null && _plugin.ImageLibrary.IsLoaded)
@@ -3552,7 +3552,7 @@ namespace Oxide.Plugins
                     container.Add(new CuiLabel
                     {
                         Text = { Text = displayName, FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
-                        RectTransform = { AnchorMin = "0.05 0.32", AnchorMax = "0.95 0.42" }
+                        RectTransform = { AnchorMin = "0.05 0.28", AnchorMax = "0.95 0.38" }
                     }, cardName);
                     
                     // Status badge
@@ -3561,38 +3561,32 @@ namespace Oxide.Plugins
                         container.Add(new CuiLabel
                         {
                             Text = { Text = "OWNED", FontSize = 7, Align = TextAnchor.MiddleCenter, Color = "0.4 1.0 0.4 1" },
-                            RectTransform = { AnchorMin = "0.05 0.23", AnchorMax = "0.95 0.31" }
+                            RectTransform = { AnchorMin = "0.05 0.20", AnchorMax = "0.95 0.27" }
                         }, cardName);
                     }
                     
-                    // Price and Buy button
+                    // Price ABOVE button and Buy button
                     if (!isOwned && !isDefault)
                     {
-                        // Price display
-                        container.Add(new CuiLabel
-                        {
-                            Text = { Text = "◆", FontSize = 9, Align = TextAnchor.MiddleRight, Color = "1 0.8 0 1" },
-                            RectTransform = { AnchorMin = "0.25 0.12", AnchorMax = "0.45 0.21" }
-                        }, cardName);
-                        
                         bool canAfford = session.Profile.Tokens >= skinCost;
-                        string priceColor = canAfford ? "1 0.9 0.7" : "1 0.4 0.4";
+                        string priceColor = canAfford ? "1 0.8 0" : "0.6 0.3 0.3";
                         
+                        // Price display with coin above button
                         container.Add(new CuiLabel
                         {
-                            Text = { Text = $"{skinCost}", FontSize = 8, Align = TextAnchor.MiddleLeft, Color = $"{priceColor} 1" },
-                            RectTransform = { AnchorMin = "0.45 0.12", AnchorMax = "0.75 0.21" }
+                            Text = { Text = $"◆ {skinCost}", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = $"{priceColor} 1" },
+                            RectTransform = { AnchorMin = "0.15 0.14", AnchorMax = "0.85 0.22" }
                         }, cardName);
                         
-                        // Buy button
+                        // Buy button (below price)
                         string btnColor = canAfford ? "0.2 0.7 0.3" : "0.3 0.3 0.3";
                         string btnText = canAfford ? "BUY" : "🔒";
                         
                         container.Add(new CuiButton
                         {
                             Button = { Color = $"{btnColor} 0.9", Command = canAfford ? $"killadome.buyskin {session.SelectedGunForSkins} {skinId}" : "" },
-                            Text = { Text = btnText, FontSize = 8, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
-                            RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.10" }
+                            Text = { Text = btnText, FontSize = 9, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
+                            RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.12" }
                         }, cardName);
                     }
                     else if (isDefault)
@@ -3600,7 +3594,7 @@ namespace Oxide.Plugins
                         container.Add(new CuiLabel
                         {
                             Text = { Text = "FREE", FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "0.6 1.0 0.6 1" },
-                            RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.10" }
+                            RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.12" }
                         }, cardName);
                     }
                 }
