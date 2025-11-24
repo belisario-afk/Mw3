@@ -410,6 +410,12 @@ namespace Oxide.Plugins
             [JsonProperty("Tokens Per Kill")]
             public int TokensPerKill { get; set; } = 10;
             
+            [JsonProperty("Admin Daily Tokens")]
+            public int AdminDailyTokens { get; set; } = 10000;
+            
+            [JsonProperty("Daily Token Refill Enabled")]
+            public bool DailyRefillEnabled { get; set; } = true;
+            
             [JsonProperty("Max Attachment Level")]
             public int MaxAttachmentLevel { get; set; } = 5;
             
@@ -633,6 +639,24 @@ namespace Oxide.Plugins
                 if (player == null || !player.IsConnected) return;
                 
                 var profile = _saveManager.LoadPlayerProfile(player.userID);
+                
+                // Check for admin daily token refill
+                if (_config.DailyRefillEnabled && permission.UserHasPermission(player.UserIDString, PERMISSION_ADMIN))
+                {
+                    // Check if 24 hours have passed since last refill
+                    TimeSpan timeSinceRefill = DateTime.UtcNow - profile.LastDailyRefill;
+                    
+                    if (timeSinceRefill.TotalHours >= 24)
+                    {
+                        profile.Tokens = _config.AdminDailyTokens;
+                        profile.LastDailyRefill = DateTime.UtcNow;
+                        _saveManager.SavePlayerProfile(profile);
+                        
+                        SendReply(player, $"<color=#00ff00>✓ Admin Daily Tokens:</color> You received {_config.AdminDailyTokens} Blood Tokens!");
+                        LogDebug($"Admin {player.displayName} received daily refill of {_config.AdminDailyTokens} tokens");
+                    }
+                }
+                
                 var session = new PlayerSession(player, profile);
                 _activeSessions[player.userID] = session;
                 
@@ -1944,6 +1968,7 @@ namespace Oxide.Plugins
             public int TotalKills { get; set; }
             public int TotalDeaths { get; set; }
             public int MatchesPlayed { get; set; }
+            public DateTime LastDailyRefill { get; set; }
             
             public PlayerProfile()
             {
