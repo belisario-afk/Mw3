@@ -3828,7 +3828,6 @@ namespace Oxide.Plugins
                 {
                     "UI Update Throttle: 100ms",
                     "Auto-Save Interval: 5 minutes",
-                    "Max Weapon Level: 10",
                     ""
                 };
                 
@@ -3935,7 +3934,6 @@ namespace Oxide.Plugins
                         Id = "silencer",
                         Name = "Silencer",
                         Slot = "barrel",
-                        MaxLevel = 5,
                         VFXTag = "silencer_smoke",
                         SFXTag = "silencer_sound"
                     },
@@ -3944,7 +3942,6 @@ namespace Oxide.Plugins
                         Id = "extended_mag",
                         Name = "Extended Magazine",
                         Slot = "mag",
-                        MaxLevel = 5,
                         VFXTag = "extended_mag_visual",
                         SFXTag = "mag_sound"
                     },
@@ -3953,7 +3950,6 @@ namespace Oxide.Plugins
                         Id = "reflex",
                         Name = "Reflex Sight",
                         Slot = "optic",
-                        MaxLevel = 3,
                         VFXTag = "reflex_glow",
                         SFXTag = "optic_sound"
                     }
@@ -3972,7 +3968,6 @@ namespace Oxide.Plugins
             public string Id { get; set; }
             public string Name { get; set; }
             public string Slot { get; set; }
-            public int MaxLevel { get; set; }
             public string VFXTag { get; set; }
             public string SFXTag { get; set; }
         }
@@ -4035,11 +4030,6 @@ namespace Oxide.Plugins
                 _config = config;
                 _economy = economy;
                 _attachmentSystem = attachmentSystem;
-            }
-            
-            public int CalculateUpgradeCost(int currentLevel)
-            {
-                return 100 * (currentLevel + 1);
             }
             
             public bool UpgradeAttachment(ulong steamId, string attachmentId)
