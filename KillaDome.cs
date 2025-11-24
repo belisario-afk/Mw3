@@ -1229,6 +1229,60 @@ namespace Oxide.Plugins
             _lobbyUI.ShowLobbyUIWithTab(player, "store");
         }
         
+        [ConsoleCommand("killadome.buygun")]
+        private void CmdBuyGun(ConsoleSystem.Arg arg)
+        {
+            var player = arg.Player();
+            if (player == null || !arg.HasArgs(1)) return;
+            
+            if (!_antiExploit.CheckRateLimit(player.userID))
+            {
+                SendReply(player, "Please slow down!");
+                return;
+            }
+            
+            string gunId = arg.Args[0];
+            
+            // Validate gun exists in config
+            if (!_gunConfig.Guns.ContainsKey(gunId))
+            {
+                SendReply(player, "Invalid gun!");
+                return;
+            }
+            
+            var gun = _gunConfig.Guns[gunId];
+            
+            var session = GetSession(player.userID);
+            if (session == null)
+            {
+                // Create session if it doesn't exist
+                var profile = _saveManager.LoadPlayerProfile(player.userID);
+                session = new PlayerSession(player, profile);
+                _activeSessions[player.userID] = session;
+            }
+            
+            // Check if already owned
+            if (session.Profile.OwnedGuns.Contains(gunId))
+            {
+                SendReply(player, "You already own this gun!");
+                return;
+            }
+            
+            if (session.Profile.Tokens < gun.Cost)
+            {
+                SendReply(player, $"Insufficient tokens! You need {gun.Cost} but only have {session.Profile.Tokens}.");
+                return;
+            }
+            
+            // Deduct cost and add gun
+            session.Profile.Tokens -= gun.Cost;
+            session.Profile.OwnedGuns.Add(gunId);
+            
+            SendReply(player, $"Successfully purchased {gun.DisplayName}!");
+            _saveManager.SavePlayerProfile(session.Profile);
+            _lobbyUI.ShowLobbyUIWithTab(player, "store");
+        }
+        
         [ConsoleCommand("killadome.applyskin")]
         private void CmdApplySkin(ConsoleSystem.Arg arg)
         {
@@ -1781,6 +1835,7 @@ namespace Oxide.Plugins
             public List<Loadout> Loadouts { get; set; }
             public Dictionary<string, int> AttachmentLevels { get; set; }
             public List<string> OwnedSkins { get; set; }
+            public List<string> OwnedGuns { get; set; } // List of owned gun IDs
             public List<string> OwnedArmor { get; set; } // List of owned armor shortnames
             public int Tokens { get; set; }
             public bool IsVIP { get; set; }
@@ -1794,6 +1849,7 @@ namespace Oxide.Plugins
                 Loadouts = new List<Loadout>();
                 AttachmentLevels = new Dictionary<string, int>();
                 OwnedSkins = new List<string>();
+                OwnedGuns = new List<string>();
                 OwnedArmor = new List<string>();
             }
             
@@ -2929,7 +2985,7 @@ namespace Oxide.Plugins
                 var baseGuns = _plugin._gunConfig.Guns.Select(g => new
                 {
                     Name = g.Value.DisplayName,
-                    Cost = 0,
+                    Cost = g.Value.Cost, // Now using actual cost from config
                     Id = g.Value.Id,
                     ImageId = g.Value.ImageUrl,
                     Shortname = g.Value.RustItemShortname
@@ -3031,11 +3087,20 @@ namespace Oxide.Plugins
                         RectTransform = { AnchorMin = "0.35 0.35", AnchorMax = "0.95 0.55" }
                     }, cardName);
                     
-                    // Status
+                    // Cost with coin icon
+                    bool canAfford = session.Profile.Tokens >= item.Cost;
                     container.Add(new CuiLabel
                     {
-                        Text = { Text = "UNLOCKED", FontSize = 9, Align = TextAnchor.MiddleLeft, Color = "0.4 1.0 0.4 1" },
-                        RectTransform = { AnchorMin = "0.35 0.10", AnchorMax = "0.95 0.30" }
+                        Text = { Text = $"◆ {item.Cost}", FontSize = 10, Align = TextAnchor.MiddleLeft, Color = canAfford ? "1 0.8 0 1" : "0.6 0.3 0.3 1" },
+                        RectTransform = { AnchorMin = "0.35 0.10", AnchorMax = "0.70 0.30" }
+                    }, cardName);
+                    
+                    // Purchase button
+                    container.Add(new CuiButton
+                    {
+                        Button = { Color = canAfford ? "0.2 0.6 0.2 0.9" : "0.3 0.3 0.3 0.5", Command = canAfford ? $"killadome.buygun {item.Id}" : "" },
+                        Text = { Text = "BUY", FontSize = 9, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
+                        RectTransform = { AnchorMin = "0.72 0.10", AnchorMax = "0.95 0.30" }
                     }, cardName);
                 }
                 
