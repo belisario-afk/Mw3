@@ -1467,16 +1467,115 @@ namespace Oxide.Plugins
             }
             else if (category == "skins")
             {
-                // Calculate max pages to prevent overflow
+                // Calculate max pages for selected gun's available skins
+                if (string.IsNullOrEmpty(session.SelectedGunForSkins))
+                    session.SelectedGunForSkins = _gunConfig.GetAllGunIds().FirstOrDefault() ?? "";
+                
                 int itemsPerPage = 12;
-                int totalItems = _gunConfig.Skins.Count + 3; // weapon skins + outfit skins
-                int maxPage = (int)Math.Ceiling((double)totalItems / itemsPerPage) - 1;
+                var availableSkins = _gunConfig.GetSkinsForWeapon(session.SelectedGunForSkins);
+                int totalItems = availableSkins.Count;
+                int maxPage = Math.Max(0, (int)Math.Ceiling((double)totalItems / itemsPerPage) - 1);
                 
                 if (direction == "next" && session.SkinsStorePage < maxPage)
                     session.SkinsStorePage++;
                 else if (direction == "prev" && session.SkinsStorePage > 0)
                     session.SkinsStorePage--;
             }
+            
+            _lobbyUI.ShowLobbyUIWithTab(player, "store");
+        }
+        
+        [ConsoleCommand("killadome.selectgunforskins")]
+        private void CmdSelectGunForSkins(ConsoleSystem.Arg arg)
+        {
+            var player = arg.Player();
+            if (player == null || !arg.HasArgs(1)) return;
+            
+            string gunId = arg.Args[0];
+            var session = GetSession(player.userID);
+            if (session == null) return;
+            
+            // Validate gun exists
+            if (!_gunConfig.Guns.ContainsKey(gunId))
+            {
+                player.ChatMessage("Invalid gun selected.");
+                return;
+            }
+            
+            session.SelectedGunForSkins = gunId;
+            session.SkinsStorePage = 0; // Reset to first page when changing guns
+            _lobbyUI.ShowLobbyUIWithTab(player, "store");
+        }
+        
+        [ConsoleCommand("killadome.buyskin")]
+        private void CmdBuySkin(ConsoleSystem.Arg arg)
+        {
+            var player = arg.Player();
+            if (player == null || !arg.HasArgs(2)) return;
+            
+            string gunId = arg.Args[0];
+            string skinId = arg.Args[1];
+            
+            var session = GetSession(player.userID);
+            if (session == null) return;
+            
+            // Validate gun exists
+            if (!_gunConfig.Guns.ContainsKey(gunId))
+            {
+                player.ChatMessage("Invalid gun.");
+                return;
+            }
+            
+            var gun = _gunConfig.Guns[gunId];
+            
+            // Validate skin is available for this gun
+            if (!gun.AvailableSkins.Contains(skinId))
+            {
+                player.ChatMessage("This skin is not available for this gun.");
+                return;
+            }
+            
+            // Check if player already owns this skin
+            if (session.Profile.OwnedSkins.Contains(skinId))
+            {
+                player.ChatMessage("You already own this skin!");
+                return;
+            }
+            
+            // Default skin is always free
+            if (skinId == "0")
+            {
+                session.Profile.OwnedSkins.Add(skinId);
+                _saveManager.SaveProfile(player.userID, session.Profile);
+                player.ChatMessage("Default skin equipped!");
+                _lobbyUI.ShowLobbyUIWithTab(player, "store");
+                return;
+            }
+            
+            // Check if player owns the gun
+            if (!session.Profile.OwnedGuns.Contains(gunId))
+            {
+                player.ChatMessage($"You must own the {gun.DisplayName} before buying skins for it!");
+                return;
+            }
+            
+            // Determine skin cost (TODO: implement rarity tiers)
+            int skinCost = _gunConfig.SkinPricing.RareCost;
+            
+            // Check affordability
+            if (session.Profile.Tokens < skinCost)
+            {
+                player.ChatMessage($"Not enough Blood Tokens! Need {skinCost}, have {session.Profile.Tokens}.");
+                return;
+            }
+            
+            // Purchase skin
+            session.Profile.Tokens -= skinCost;
+            session.Profile.OwnedSkins.Add(skinId);
+            _saveManager.SaveProfile(player.userID, session.Profile);
+            
+            player.ChatMessage($"✓ Purchased skin {skinId} for {gun.DisplayName}! ({skinCost} tokens)");
+            _telemetry.RecordPurchase(player.userID, $"skin_{skinId}", skinCost);
             
             _lobbyUI.ShowLobbyUIWithTab(player, "store");
         }
@@ -1812,6 +1911,7 @@ namespace Oxide.Plugins
             public string SelectedStoreCategory { get; set; } // "guns", "skins", or "outfits"
             public int GunsStorePage { get; set; } // Current page for gun store
             public int SkinsStorePage { get; set; } // Current page for skins store
+            public string SelectedGunForSkins { get; set; } // Which gun's skins to show in skin store
             public DateTime LastDiceGame { get; set; } // Cooldown for dice game
             public string SelectedLoadoutTab { get; set; } // "weapons" or "outfit"
             
@@ -1825,6 +1925,7 @@ namespace Oxide.Plugins
                 SelectedStoreCategory = "guns"; // Default to guns store
                 GunsStorePage = 0; // Start at first page
                 SkinsStorePage = 0; // Start at first page
+                SelectedGunForSkins = ""; // Will default to first gun when opening skin store
                 SelectedLoadoutTab = "weapons"; // Default to weapons tab
             }
         }
@@ -2427,14 +2528,14 @@ namespace Oxide.Plugins
                 // Skins list - Now using centralized configuration!
                 var availableSkins = _plugin._gunConfig.GetSkinsForWeapon(currentWeapon);
                 
-                for (int i = 0; i < availableSkins.Length; i++)
+                for (int i = 0; i < availableSkins.Count; i++)
                 {
-                    var skin = availableSkins[i];
+                    var skinId = availableSkins[i];
                     float yMin = 0.96f - ((i + 1) * 0.20f);
                     float yMax = yMin + 0.18f;
                     
-                    bool isOwned = session.Profile.OwnedSkins.Contains(skin.SkinId);
-                    bool isEquipped = loadout.Skins.TryGetValue(skin.WeaponId, out string equippedSkin) && equippedSkin == skin.SkinId;
+                    bool isOwned = session.Profile.OwnedSkins.Contains(skinId) || skinId == "0"; // Default skin is always owned
+                    bool isEquipped = loadout.Skins.TryGetValue(currentWeapon, out string equippedSkin) && equippedSkin == skinId;
                     
                     container.Add(new CuiPanel
                     {
@@ -2449,22 +2550,24 @@ namespace Oxide.Plugins
                             Image = { Color = "0.6 0.4 1.0 0.6" },
                             RectTransform = { AnchorMin = "0 0", AnchorMax = "0.015 1" }
                         }, $"SkinCard_{i}");
-                    }
                     
-                    // Skin image - using ImageUrl from centralized config
+                    // Skin image - using workshop skin ID for display
+                    string skinDisplayName = skinId == "0" ? "Default" : $"Skin {skinId}";
+                    string imageKey = $"{currentWeapon}_skin_{skinId}"; // ImageLibrary key format
+                    
                     container.Add(new CuiElement
                     {
                         Parent = $"SkinCard_{i}",
                         Components =
                         {
-                            new CuiRawImageComponent { Png = (string)_plugin.ImageLibrary?.Call("GetImage", skin.ImageUrl) },
+                            new CuiRawImageComponent { Png = (string)_plugin.ImageLibrary?.Call("GetImage", imageKey) },
                             new CuiRectTransformComponent { AnchorMin = "0.05 0.05", AnchorMax = "0.35 0.45" }
                         }
                     });
                     
                     container.Add(new CuiLabel
                     {
-                        Text = { Text = skin.Name, FontSize = 10, Align = TextAnchor.MiddleLeft, Color = "1 1 1 1" },
+                        Text = { Text = skinDisplayName, FontSize = 10, Align = TextAnchor.MiddleLeft, Color = "1 1 1 1" },
                         RectTransform = { AnchorMin = "0.40 0.70", AnchorMax = "0.95 0.90" }
                     }, $"SkinCard_{i}");
                     
@@ -2490,7 +2593,7 @@ namespace Oxide.Plugins
                     {
                         container.Add(new CuiButton
                         {
-                            Button = { Command = $"killadome.applyskin {editingSlot} {skin.SkinId}", Color = "0.2 0.6 0.8 0.9" },
+                            Button = { Command = $"killadome.applyskin {editingSlot} {skinId}", Color = "0.2 0.6 0.8 0.9" },
                             Text = { Text = "EQUIP", FontSize = 9, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
                             RectTransform = { AnchorMin = "0.40 0.10", AnchorMax = "0.95 0.40" }
                         }, $"SkinCard_{i}");
@@ -3257,186 +3360,224 @@ namespace Oxide.Plugins
             
             private void ShowSkinsStoreContent(CuiElementContainer container, PlayerSession session, BasePlayer player)
             {
-                // Load weapon skins and outfit skins
-                var weaponSkins = _plugin._gunConfig.Skins.Select(skin => new
+                // OPTION 1: Gun Selector → Show Available Skins
+                
+                // Get all available guns
+                var allGuns = _plugin._gunConfig.GetAllGunIds();
+                if (allGuns.Length == 0)
                 {
-                    Name = skin.Name,
-                    Cost = skin.Cost,
-                    Id = skin.SkinId,
-                    ImageId = skin.ImageUrl,
-                    Tag = skin.Tag,
-                    Rarity = skin.Rarity,
-                    Type = "Weapon"
-                }).ToList();
+                    container.Add(new CuiLabel
+                    {
+                        Text = { Text = "No guns configured", FontSize = 12, Align = TextAnchor.MiddleCenter, Color = "1 0.5 0.5 1" },
+                        RectTransform = { AnchorMin = "0.05 0.08", AnchorMax = "0.95 0.77" }
+                    }, UI_TAB_CONTAINER);
+                    return;
+                }
                 
-                // Placeholder outfit skins
-                var outfitSkins = new[]
+                // Default to first gun if none selected
+                if (string.IsNullOrEmpty(session.SelectedGunForSkins))
                 {
-                    new { Name = "Tactical Outfit", Cost = 800, Id = "outfit_tactical", ImageId = "outfit_tactical", Tag = "NEW", Rarity = "Epic", Type = "Outfit" },
-                    new { Name = "Urban Camo", Cost = 600, Id = "outfit_urban", ImageId = "outfit_urban", Tag = "", Rarity = "Rare", Type = "Outfit" },
-                    new { Name = "Desert Gear", Cost = 700, Id = "outfit_desert", ImageId = "outfit_desert", Tag = "HOT", Rarity = "Epic", Type = "Outfit" }
-                };
+                    session.SelectedGunForSkins = allGuns[0];
+                }
                 
-                var allSkins = weaponSkins.Concat(outfitSkins).ToArray();
+                // Validate selected gun still exists
+                if (!_plugin._gunConfig.Guns.ContainsKey(session.SelectedGunForSkins))
+                {
+                    session.SelectedGunForSkins = allGuns[0];
+                }
                 
-                // Pagination (12 items per page: 4 columns × 3 rows)
-                int itemsPerPage = 12;
-                int currentPage = session.SkinsStorePage;
-                int totalPages = (int)Math.Ceiling((double)allSkins.Length / itemsPerPage);
-                var pagedSkins = allSkins.Skip(currentPage * itemsPerPage).Take(itemsPerPage).ToArray();
+                var selectedGun = _plugin._gunConfig.Guns[session.SelectedGunForSkins];
+                var availableSkins = selectedGun.AvailableSkins ?? new List<string>();
                 
-                // ===== SKINS SECTION (FULL WIDTH) - PAGINATED =====
+                // ===== MAIN CONTAINER =====
                 container.Add(new CuiPanel
                 {
                     Image = { Color = "0.06 0.06 0.08 0.85" },
                     RectTransform = { AnchorMin = "0.05 0.08", AnchorMax = "0.95 0.77" }
                 }, UI_TAB_CONTAINER, "SkinsStoreSection");
                 
-                // Section header
+                // ===== GUN SELECTOR ROW =====
                 container.Add(new CuiPanel
                 {
                     Image = { Color = "0.15 0.1 0.2 0.9" },
-                    RectTransform = { AnchorMin = "0 0.94", AnchorMax = "1 1" }
-                }, "SkinsStoreSection");
+                    RectTransform = { AnchorMin = "0 0.88", AnchorMax = "1 0.96" }
+                }, "SkinsStoreSection", "GunSelectorBar");
                 
-                // Section Title
                 container.Add(new CuiLabel
                 {
-                    Text = { Text = "🎨  W E A P O N   &   O U T F I T   S K I N S", FontSize = 14, Align = TextAnchor.MiddleCenter, Color = "1.0 0.9 0.8 1" },
-                    RectTransform = { AnchorMin = "0.05 0.94", AnchorMax = "0.70 1" }
-                }, "SkinsStoreSection");
+                    Text = { Text = "SELECT GUN:", FontSize = 10, Align = TextAnchor.MiddleLeft, Color = "0.9 0.8 1.0 1" },
+                    RectTransform = { AnchorMin = "0.02 0", AnchorMax = "0.15 1" }
+                }, "GunSelectorBar");
+                
+                // Gun buttons (horizontally scrolling)
+                float buttonWidth = 0.12f;
+                float buttonSpacing = 0.005f;
+                float startX = 0.15f;
+                
+                for (int i = 0; i < Math.Min(allGuns.Length, 6); i++) // Show first 6 guns
+                {
+                    string gunId = allGuns[i];
+                    var gun = _plugin._gunConfig.Guns[gunId];
+                    bool isSelected = gunId == session.SelectedGunForSkins;
+                    
+                    float xMin = startX + (i * (buttonWidth + buttonSpacing));
+                    float xMax = xMin + buttonWidth;
+                    
+                    string btnColor = isSelected ? "0.4 0.7 0.4" : "0.2 0.2 0.3";
+                    
+                    container.Add(new CuiButton
+                    {
+                        Button = { Color = $"{btnColor} 0.9", Command = $"killadome.selectgunforskins {gunId}" },
+                        Text = { Text = gun.DisplayName, FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
+                        RectTransform = { AnchorMin = $"{xMin} 0.1", AnchorMax = $"{xMax} 0.9" }
+                    }, "GunSelectorBar");
+                }
+                
+                // ===== SELECTED GUN DISPLAY =====
+                container.Add(new CuiPanel
+                {
+                    Image = { Color = "0.12 0.12 0.16 0.8" },
+                    RectTransform = { AnchorMin = "0 0.81", AnchorMax = "1 0.87" }
+                }, "SkinsStoreSection", "SelectedGunBar");
+                
+                container.Add(new CuiLabel
+                {
+                    Text = { Text = $"🎨  Skins for: {selectedGun.DisplayName}", FontSize = 12, Align = TextAnchor.MiddleCenter, Color = "1.0 0.9 0.8 1" },
+                    RectTransform = { AnchorMin = "0.05 0", AnchorMax = "0.95 1" }
+                }, "SelectedGunBar");
+                
+                // ===== SKINS GRID =====
+                int itemsPerPage = 12;
+                int currentPage = session.SkinsStorePage;
+                int totalPages = Math.Max(1, (int)Math.Ceiling((double)availableSkins.Count / itemsPerPage));
+                var pagedSkins = availableSkins.Skip(currentPage * itemsPerPage).Take(itemsPerPage).ToList();
                 
                 // Page indicator
                 if (totalPages > 1)
                 {
                     container.Add(new CuiLabel
                     {
-                        Text = { Text = $"{currentPage + 1}/{totalPages}", FontSize = 10, Align = TextAnchor.MiddleRight, Color = "0.8 0.8 0.8 1" },
-                        RectTransform = { AnchorMin = "0.70 0.94", AnchorMax = "0.95 1" }
+                        Text = { Text = $"Page {currentPage + 1}/{totalPages}", FontSize = 9, Align = TextAnchor.MiddleRight, Color = "0.8 0.8 0.8 1" },
+                        RectTransform = { AnchorMin = "0.75 0.81", AnchorMax = "0.98 0.87" }
                     }, "SkinsStoreSection");
                 }
                 
-                // Smaller 4-column grid (more compact)
+                // Grid layout: 4 columns × 3 rows
                 int itemsPerRow = 4;
-                float cardWidth = 0.23f; // Smaller width
-                float cardHeight = 0.28f; // Smaller height
-                float spacingX = 0.015f; // Smaller spacing
-                float spacingY = 0.01f;
-                float startX = 0.02f;
-                float startY = 0.92f;
+                float cardWidth = 0.23f;
+                float cardHeight = 0.24f;
+                float spacingX = 0.015f;
+                float spacingY = 0.015f;
+                float startX2 = 0.02f;
+                float startY = 0.78f;
                 
-                for (int i = 0; i < pagedSkins.Length; i++)
+                for (int i = 0; i < pagedSkins.Count; i++)
                 {
-                    var item = pagedSkins[i];
+                    string skinId = pagedSkins[i];
                     int row = i / itemsPerRow;
                     int col = i % itemsPerRow;
                     
-                    float xMin = startX + (col * (cardWidth + spacingX));
+                    float xMin = startX2 + (col * (cardWidth + spacingX));
                     float xMax = xMin + cardWidth;
                     float yMax = startY - (row * (cardHeight + spacingY));
                     float yMin = yMax - cardHeight;
                     
                     string cardName = $"SkinCard_{i}";
                     
+                    // Check ownership
+                    bool isOwned = session.Profile.OwnedSkins.Contains(skinId) || skinId == "0";
+                    bool isDefault = skinId == "0";
+                    
+                    // Determine cost based on tier (TODO: implement tier detection)
+                    int skinCost = isDefault ? 0 : _plugin._gunConfig.SkinPricing.RareCost;
+                    
                     container.Add(new CuiPanel
                     {
-                        Image = { Color = "0.12 0.12 0.16 0.95" },
+                        Image = { Color = isOwned ? "0.14 0.14 0.18 0.95" : "0.10 0.10 0.14 0.95" },
                         RectTransform = { AnchorMin = $"{xMin} {yMin}", AnchorMax = $"{xMax} {yMax}" }
                     }, "SkinsStoreSection", cardName);
                     
-                    // Preview box
-                    string previewName = $"SkinPreview_{i}";
+                    // Skin preview image
+                    string imageKey = $"{session.SelectedGunForSkins}_skin_{skinId}";
                     container.Add(new CuiPanel
                     {
                         Image = { Color = "0.08 0.08 0.12 1" },
-                        RectTransform = { AnchorMin = "0.10 0.40", AnchorMax = "0.90 0.85" }
-                    }, cardName, previewName);
+                        RectTransform = { AnchorMin = "0.10 0.45", AnchorMax = "0.90 0.88" }
+                    }, cardName, $"{cardName}_preview");
                     
-                    // Try to add image
                     if (_plugin.ImageLibrary != null && _plugin.ImageLibrary.IsLoaded)
                     {
-                        string imageId = (string)_plugin.ImageLibrary.Call("GetImage", item.ImageId);
-                        if (!string.IsNullOrEmpty(imageId))
+                        string imgData = (string)_plugin.ImageLibrary.Call("GetImage", imageKey);
+                        if (!string.IsNullOrEmpty(imgData))
                         {
                             container.Add(new CuiElement
                             {
-                                Parent = previewName,
+                                Parent = $"{cardName}_preview",
                                 Components =
                                 {
-                                    new CuiRawImageComponent { Png = imageId },
+                                    new CuiRawImageComponent { Png = imgData },
                                     new CuiRectTransformComponent { AnchorMin = "0.1 0.1", AnchorMax = "0.9 0.9" }
                                 }
                             });
                         }
                     }
                     
-                    // Type badge
-                    string typeColor = item.Type == "Weapon" ? "0.6 0.4 1.0" : "1.0 0.6 0.4";
+                    // Skin name/ID
+                    string displayName = isDefault ? "Default" : $"Skin {skinId}";
                     container.Add(new CuiLabel
                     {
-                        Text = { Text = item.Type.ToUpper(), FontSize = 6, Align = TextAnchor.MiddleCenter, Color = $"{typeColor} 0.9" },
-                        RectTransform = { AnchorMin = "0.05 0.85", AnchorMax = "0.35 0.92" }
+                        Text = { Text = displayName, FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
+                        RectTransform = { AnchorMin = "0.05 0.32", AnchorMax = "0.95 0.42" }
                     }, cardName);
                     
-                    // Tag badge
-                    if (!string.IsNullOrWhiteSpace(item.Tag))
+                    // Status badge
+                    if (isOwned)
                     {
-                        string tagColor = item.Tag == "POPULAR" ? "1 0.3 0.3" : 
-                                         item.Tag == "HOT" ? "1.0 0.5 0.0" : "0.3 1 0.5";
-                        container.Add(new CuiPanel
-                        {
-                            Image = { Color = $"{tagColor} 0.9" },
-                            RectTransform = { AnchorMin = "0.65 0.85", AnchorMax = "0.95 0.92" }
-                        }, cardName);
-                        
                         container.Add(new CuiLabel
                         {
-                            Text = { Text = item.Tag, FontSize = 6, Align = TextAnchor.MiddleCenter, Color = "0.1 0.1 0.1 1" },
-                            RectTransform = { AnchorMin = "0.65 0.85", AnchorMax = "0.95 0.92" }
+                            Text = { Text = "OWNED", FontSize = 7, Align = TextAnchor.MiddleCenter, Color = "0.4 1.0 0.4 1" },
+                            RectTransform = { AnchorMin = "0.05 0.23", AnchorMax = "0.95 0.31" }
                         }, cardName);
                     }
                     
-                    // Item name
-                    container.Add(new CuiLabel
+                    // Price and Buy button
+                    if (!isOwned && !isDefault)
                     {
-                        Text = { Text = item.Name, FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
-                        RectTransform = { AnchorMin = "0.05 0.28", AnchorMax = "0.95 0.38" }
-                    }, cardName);
-                    
-                    // Rarity
-                    string rarityColor = item.Rarity == "Epic" ? "0.6 0.3 1.0" : 
-                                        item.Rarity == "Legendary" ? "1.0 0.6 0.2" :
-                                        item.Rarity == "Rare" ? "0.3 0.7 1.0" : "0.5 0.5 0.5";
-                    container.Add(new CuiLabel
+                        // Price display
+                        container.Add(new CuiLabel
+                        {
+                            Text = { Text = "◆", FontSize = 9, Align = TextAnchor.MiddleRight, Color = "1 0.8 0 1" },
+                            RectTransform = { AnchorMin = "0.25 0.12", AnchorMax = "0.45 0.21" }
+                        }, cardName);
+                        
+                        bool canAfford = session.Profile.Tokens >= skinCost;
+                        string priceColor = canAfford ? "1 0.9 0.7" : "1 0.4 0.4";
+                        
+                        container.Add(new CuiLabel
+                        {
+                            Text = { Text = $"{skinCost}", FontSize = 8, Align = TextAnchor.MiddleLeft, Color = $"{priceColor} 1" },
+                            RectTransform = { AnchorMin = "0.45 0.12", AnchorMax = "0.75 0.21" }
+                        }, cardName);
+                        
+                        // Buy button
+                        string btnColor = canAfford ? "0.2 0.7 0.3" : "0.3 0.3 0.3";
+                        string btnText = canAfford ? "BUY" : "🔒";
+                        
+                        container.Add(new CuiButton
+                        {
+                            Button = { Color = $"{btnColor} 0.9", Command = canAfford ? $"killadome.buyskin {session.SelectedGunForSkins} {skinId}" : "" },
+                            Text = { Text = btnText, FontSize = 8, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
+                            RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.10" }
+                        }, cardName);
+                    }
+                    else if (isDefault)
                     {
-                        Text = { Text = $"★ {item.Rarity}", FontSize = 7, Align = TextAnchor.MiddleCenter, Color = $"{rarityColor} 1" },
-                        RectTransform = { AnchorMin = "0.05 0.20", AnchorMax = "0.95 0.28" }
-                    }, cardName);
-                    
-                    // Price
-                    container.Add(new CuiLabel
-                    {
-                        Text = { Text = "◆", FontSize = 8, Align = TextAnchor.MiddleRight, Color = "1 0.8 0 1" },
-                        RectTransform = { AnchorMin = "0.25 0.10", AnchorMax = "0.45 0.18" }
-                    }, cardName);
-                    
-                    container.Add(new CuiLabel
-                    {
-                        Text = { Text = $"{item.Cost}", FontSize = 7, Align = TextAnchor.MiddleLeft, Color = "1 0.9 0.7 1" },
-                        RectTransform = { AnchorMin = "0.45 0.10", AnchorMax = "0.75 0.18" }
-                    }, cardName);
-                    
-                    // Buy button
-                    bool canAfford = session.Profile.Tokens >= item.Cost;
-                    string btnColor = canAfford ? "0.2 0.7 0.3" : "0.3 0.3 0.3";
-                    string btnText = canAfford ? "BUY" : "🔒";
-                    
-                    container.Add(new CuiButton
-                    {
-                        Button = { Color = $"{btnColor} 0.9", Command = canAfford ? $"killadome.purchase {item.Id} {item.Cost}" : "" },
-                        Text = { Text = btnText, FontSize = 7, Align = TextAnchor.MiddleCenter, Color = canAfford ? "1 1 1 1" : "0.5 0.5 0.5 1" },
-                        RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.08" }
-                    }, cardName);
+                        container.Add(new CuiLabel
+                        {
+                            Text = { Text = "FREE", FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "0.6 1.0 0.6 1" },
+                            RectTransform = { AnchorMin = "0.15 0.02", AnchorMax = "0.85 0.10" }
+                        }, cardName);
+                    }
                 }
                 
                 // Pagination buttons
@@ -3445,7 +3586,7 @@ namespace Oxide.Plugins
                     bool canGoPrev = currentPage > 0;
                     container.Add(new CuiButton
                     {
-                        Button = { Color = canGoPrev ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoPrev ? "killadome.storepage prev" : "" },
+                        Button = { Color = canGoPrev ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoPrev ? "killadome.storepage skins prev" : "" },
                         Text = { Text = "◀ PREV", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canGoPrev ? "1 1 1 1" : "0.5 0.5 0.5 1" },
                         RectTransform = { AnchorMin = "0.02 0.01", AnchorMax = "0.20 0.05" }
                     }, "SkinsStoreSection");
@@ -3453,7 +3594,7 @@ namespace Oxide.Plugins
                     bool canGoNext = currentPage < totalPages - 1;
                     container.Add(new CuiButton
                     {
-                        Button = { Color = canGoNext ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoNext ? "killadome.storepage next" : "" },
+                        Button = { Color = canGoNext ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoNext ? "killadome.storepage skins next" : "" },
                         Text = { Text = "NEXT ▶", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canGoNext ? "1 1 1 1" : "0.5 0.5 0.5 1" },
                         RectTransform = { AnchorMin = "0.80 0.01", AnchorMax = "0.98 0.05" }
                     }, "SkinsStoreSection");
