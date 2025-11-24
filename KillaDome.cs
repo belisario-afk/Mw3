@@ -2597,7 +2597,7 @@ namespace Oxide.Plugins
                     }, $"SkinCard_{i}");
                     
                     string statusText = isEquipped ? "EQUIPPED" : (isOwned ? "OWNED" : "LOCKED");
-                    string statusColor = isEquipped ? "0.4 1.0 0.4" : (isOwned ? "0.6 0.8 1.0" : "1.0 0.4 0.4");
+                    string statusColor = isEquipped ? "0.4 1.0 0.4" : (isOwned ? "0.3 0.8 0.4" : "1.0 0.4 0.4");
                     
                     container.Add(new CuiLabel
                     {
@@ -2752,7 +2752,7 @@ namespace Oxide.Plugins
                     }, $"AttCard_{i}");
                     
                     string statusText = isEquipped ? "EQUIPPED" : "OWNED";
-                    string statusColor = isEquipped ? "0.4 1.0 0.4" : "0.6 0.8 1.0";
+                    string statusColor = isEquipped ? "0.4 1.0 0.4" : "0.3 0.8 0.4";
                     
                     container.Add(new CuiLabel
                     {
@@ -2888,7 +2888,7 @@ namespace Oxide.Plugins
                         
                         container.Add(new CuiLabel
                         {
-                            Text = { Text = "Purchase in\nOutfit Store", FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "0.4 0.6 0.8 1" },
+                            Text = { Text = "Purchase in\nOutfit Store", FontSize = 8, Align = TextAnchor.MiddleCenter, Color = "0.4 0.7 0.4 1" },
                             RectTransform = { AnchorMin = "0.05 0.25", AnchorMax = "0.95 0.38" }
                         }, $"ArmorSlot_{slot}");
                     }
@@ -3448,7 +3448,7 @@ namespace Oxide.Plugins
                     float xMin = startX + (i * (buttonWidth + buttonSpacing));
                     float xMax = xMin + buttonWidth;
                     
-                    string btnColor = isSelected ? "0.4 0.7 0.4" : "0.2 0.2 0.3";
+                    string btnColor = isSelected ? "0.2 0.6 0.3" : "0.1 0.3 0.15";
                     
                     container.Add(new CuiButton
                     {
