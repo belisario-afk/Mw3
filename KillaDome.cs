@@ -60,16 +60,17 @@ namespace Oxide.Plugins
         #region Gun & Image Configuration
         
         /// <summary>
-        /// CENTRALIZED GUN AND IMAGE CONFIGURATION
+        /// SIMPLIFIED GUN AND SKIN CONFIGURATION
         /// Now loaded from external JSON file for easy management!
         /// 
         /// File: 
-        /// - oxide/data/KillaDome/Guns.json - All weapon definitions and skins
+        /// - oxide/data/KillaDome/Guns.json - All weapon definitions with skin lists
         /// 
-        /// AUTOMATIC FEATURES:
-        /// - When you add a new gun to Guns.json, it automatically appears in the Loadout Tab
-        /// - When you add a new skin to Guns.json, it automatically appears in the Store Tab
-        /// - No need to edit plugin code - everything updates from JSON file!
+        /// SIMPLIFIED FEATURES:
+        /// - Each gun has a Cost and list of AvailableSkins (just skin IDs)
+        /// - Base guns must be purchased (not free)
+        /// - Skins are just IDs: "0" (default), or workshop IDs like "3611341751"
+        /// - Skin pricing based on rarity tiers (Common/Rare/Epic/Legendary)
         /// 
         /// To reload changes: Use 'oxide.reload KillaDome' command
         /// </summary>
@@ -78,8 +79,8 @@ namespace Oxide.Plugins
             [JsonProperty("Guns")]
             public Dictionary<string, GunDefinition> Guns { get; set; } = new Dictionary<string, GunDefinition>();
             
-            [JsonProperty("Skins")]
-            public List<SkinDefinition> Skins { get; set; } = new List<SkinDefinition>();
+            [JsonProperty("SkinPricing")]
+            public SkinPricing SkinPricing { get; set; } = new SkinPricing();
             
             // ===== HELPER METHODS =====
             
@@ -88,20 +89,18 @@ namespace Oxide.Plugins
                 return Guns.ContainsKey(gunId) ? Guns[gunId].ImageUrl : "";
             }
             
-            public string GetSkinImageUrl(string skinId)
-            {
-                var skin = Skins.FirstOrDefault(s => s.SkinId == skinId);
-                return skin?.ImageUrl ?? "";
-            }
-            
             public string[] GetAllGunIds()
             {
                 return Guns.Keys.ToArray();
             }
             
-            public SkinDefinition[] GetSkinsForWeapon(string weaponId)
+            public List<string> GetSkinsForWeapon(string weaponId)
             {
-                return Skins.Where(s => s.WeaponId == weaponId).ToArray();
+                if (Guns.ContainsKey(weaponId))
+                {
+                    return Guns[weaponId].AvailableSkins ?? new List<string>();
+                }
+                return new List<string>();
             }
             
             // ===== DEFAULT CONFIGURATION =====
@@ -116,155 +115,109 @@ namespace Oxide.Plugins
                         Id = "ak47",
                         DisplayName = "AK-47",
                         RustItemShortname = "rifle.ak",
-                        ImageUrl = "https://i.imgur.com/YourAK47Image.png"
+                        ImageUrl = "https://i.imgur.com/YourAK47Image.png",
+                        Cost = 500,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0", "3602286295", "3102802323", "skin_ak47_classic" }
                     },
                     ["lr300"] = new GunDefinition
                     {
                         Id = "lr300",
                         DisplayName = "LR-300",
                         RustItemShortname = "rifle.lr300",
-                        ImageUrl = "https://i.imgur.com/YourLR300Image.png"
+                        ImageUrl = "https://i.imgur.com/YourLR300Image.png",
+                        Cost = 500,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0", "skin_lr300_gold" }
                     },
                     ["m249"] = new GunDefinition
                     {
                         Id = "m249",
                         DisplayName = "M249",
                         RustItemShortname = "lmg.m249",
-                        ImageUrl = "https://i.imgur.com/YourM249Image.png"
+                        ImageUrl = "https://i.imgur.com/YourM249Image.png",
+                        Cost = 600,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0", "skin_m249_chrome" }
                     },
                     ["mp5"] = new GunDefinition
                     {
                         Id = "mp5",
                         DisplayName = "MP5A4",
                         RustItemShortname = "smg.mp5",
-                        ImageUrl = "https://i.imgur.com/YourMP5Image.png"
+                        ImageUrl = "https://i.imgur.com/YourMP5Image.png",
+                        Cost = 400,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0", "skin_mp5_tactical" }
                     },
                     ["thompson"] = new GunDefinition
                     {
                         Id = "thompson",
                         DisplayName = "Thompson",
                         RustItemShortname = "smg.thompson",
-                        ImageUrl = "https://i.imgur.com/YourThompsonImage.png"
+                        ImageUrl = "https://i.imgur.com/YourThompsonImage.png",
+                        Cost = 400,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0", "skin_thompson_dragon" }
                     },
                     ["python"] = new GunDefinition
                     {
                         Id = "python",
                         DisplayName = "Python Revolver",
                         RustItemShortname = "pistol.python",
-                        ImageUrl = "https://i.imgur.com/YourPythonImage.png"
+                        ImageUrl = "https://i.imgur.com/YourPythonImage.png",
+                        Cost = 300,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0", "skin_pistol_black" }
                     },
                     ["bolt"] = new GunDefinition
                     {
                         Id = "bolt",
                         DisplayName = "Bolt Action Rifle",
                         RustItemShortname = "rifle.bolt",
-                        ImageUrl = "https://i.imgur.com/YourBoltImage.png"
+                        ImageUrl = "https://i.imgur.com/YourBoltImage.png",
+                        Cost = 550,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0" }
                     },
                     ["sarpistol"] = new GunDefinition
                     {
                         Id = "sarpistol",
                         DisplayName = "Semi-Auto Pistol",
                         RustItemShortname = "pistol.semiauto",
-                        ImageUrl = "https://i.imgur.com/YourSARImage.png"
+                        ImageUrl = "https://i.imgur.com/YourSARImage.png",
+                        Cost = 250,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0" }
                     },
                     ["custom"] = new GunDefinition
                     {
                         Id = "custom",
                         DisplayName = "Custom SMG",
                         RustItemShortname = "smg.2",
-                        ImageUrl = "https://i.imgur.com/YourCustomImage.png"
+                        ImageUrl = "https://i.imgur.com/YourCustomImage.png",
+                        Cost = 350,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0" }
                     },
                     ["m39"] = new GunDefinition
                     {
                         Id = "m39",
                         DisplayName = "M39 Rifle",
                         RustItemShortname = "rifle.m39",
-                        ImageUrl = "https://i.imgur.com/YourM39Image.png"
+                        ImageUrl = "https://i.imgur.com/YourM39Image.png",
+                        Cost = 450,
+                        DefaultSkinId = "0",
+                        AvailableSkins = new List<string> { "0" }
                     }
                 };
                 
-                config.Skins = new List<SkinDefinition>
+                config.SkinPricing = new SkinPricing
                 {
-                    new SkinDefinition
-                    {
-                        Name = "AK-47 Tempered",
-                        SkinId = "3602286295",
-                        WeaponId = "ak47",
-                        ImageUrl = "https://i.imgur.com/YourAK47TemperedSkin.png",
-                        Cost = 650,
-                        Tag = "NEW",
-                        Rarity = "Legendary"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "AK-47 Neon",
-                        SkinId = "3102802323",
-                        WeaponId = "ak47",
-                        ImageUrl = "https://i.imgur.com/YourAK47NeonSkin.png",
-                        Cost = 500,
-                        Tag = "POPULAR",
-                        Rarity = "Epic"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "AK-47 Classic",
-                        SkinId = "skin_ak47_classic",
-                        WeaponId = "ak47",
-                        ImageUrl = "https://i.imgur.com/YourAK47ClassicSkin.png",
-                        Cost = 400,
-                        Tag = "",
-                        Rarity = "Rare"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "M249 Chrome",
-                        SkinId = "skin_m249_chrome",
-                        WeaponId = "m249",
-                        ImageUrl = "https://i.imgur.com/YourM249ChromeSkin.png",
-                        Cost = 450,
-                        Tag = "",
-                        Rarity = "Epic"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "Python Black",
-                        SkinId = "skin_pistol_black",
-                        WeaponId = "python",
-                        ImageUrl = "https://i.imgur.com/YourPistolBlackSkin.png",
-                        Cost = 250,
-                        Tag = "",
-                        Rarity = "Common"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "LR-300 Gold",
-                        SkinId = "skin_lr300_gold",
-                        WeaponId = "lr300",
-                        ImageUrl = "https://i.imgur.com/YourLR300GoldSkin.png",
-                        Cost = 600,
-                        Tag = "",
-                        Rarity = "Legendary"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "MP5 Tactical",
-                        SkinId = "skin_mp5_tactical",
-                        WeaponId = "mp5",
-                        ImageUrl = "https://i.imgur.com/YourMP5TacticalSkin.png",
-                        Cost = 350,
-                        Tag = "",
-                        Rarity = "Rare"
-                    },
-                    new SkinDefinition
-                    {
-                        Name = "Thompson Dragon",
-                        SkinId = "skin_thompson_dragon",
-                        WeaponId = "thompson",
-                        ImageUrl = "https://i.imgur.com/YourThompsonDragonSkin.png",
-                        Cost = 550,
-                        Tag = "HOT",
-                        Rarity = "Epic"
-                    }
+                    CommonCost = 250,
+                    RareCost = 400,
+                    EpicCost = 600,
+                    LegendaryCost = 800
                 };
                 
                 return config;
@@ -277,17 +230,37 @@ namespace Oxide.Plugins
             public string DisplayName { get; set; }
             public string RustItemShortname { get; set; }
             public string ImageUrl { get; set; }
+            public int Cost { get; set; } = 500; // Cost to purchase the base gun
+            public string DefaultSkinId { get; set; } = "0"; // Default Rust skin ID (0 = no skin)
+            public List<string> AvailableSkins { get; set; } = new List<string>(); // List of skin IDs available for purchase
         }
         
-        public class SkinDefinition
+        public class SkinPricing
         {
-            public string Name { get; set; }
-            public string SkinId { get; set; }
-            public string WeaponId { get; set; }
-            public string ImageUrl { get; set; }
-            public int Cost { get; set; } = 300; // Default cost
-            public string Tag { get; set; } = ""; // Optional tag like "NEW", "POPULAR", etc.
-            public string Rarity { get; set; } = "Common"; // Rarity tier
+            [JsonProperty("CommonCost")]
+            public int CommonCost { get; set; } = 250;
+            
+            [JsonProperty("RareCost")]
+            public int RareCost { get; set; } = 400;
+            
+            [JsonProperty("EpicCost")]
+            public int EpicCost { get; set; } = 600;
+            
+            [JsonProperty("LegendaryCost")]
+            public int LegendaryCost { get; set; } = 800;
+            
+            public int GetCostForSkinId(string skinId)
+            {
+                // Simple heuristic: if skin ID is "0", it's free (default)
+                if (skinId == "0") return 0;
+                
+                // Workshop IDs starting with 3 are typically higher quality
+                if (skinId.StartsWith("3") && skinId.Length > 8)
+                    return LegendaryCost;
+                
+                // You can customize this logic or add a mapping
+                return RareCost;
+            }
         }
         
         // ===== OUTFIT/ARMOR CONFIGURATION =====
@@ -501,12 +474,21 @@ namespace Oxide.Plugins
             {
                 string json = File.ReadAllText(filePath);
                 var config = JsonConvert.DeserializeObject<GunConfig>(json);
-                if (config == null || config.Guns == null || config.Skins == null)
+                if (config == null || config.Guns == null || config.SkinPricing == null)
                 {
                     PrintWarning("Guns.json is invalid. Using defaults...");
                     return GunConfig.CreateDefault();
                 }
-                Puts($"Loaded {config.Guns.Count} guns and {config.Skins.Count} skins from Guns.json");
+                
+                // Count total skins across all guns
+                int totalSkins = 0;
+                foreach (var gun in config.Guns.Values)
+                {
+                    if (gun.AvailableSkins != null)
+                        totalSkins += gun.AvailableSkins.Count;
+                }
+                
+                Puts($"Loaded {config.Guns.Count} guns with {totalSkins} total skins from Guns.json");
                 return config;
             }
             catch (Exception ex)
@@ -608,14 +590,8 @@ namespace Oxide.Plugins
                 }
             }
             
-            // Load skin images
-            foreach (var skin in _gunConfig.Skins)
-            {
-                if (!string.IsNullOrEmpty(skin.ImageUrl))
-                {
-                    ImageLibrary.Call("AddImage", skin.ImageUrl, skin.ImageUrl);
-                }
-            }
+            // No separate skin images - skins use Rust workshop IDs
+            // ImageLibrary will handle workshop skins automatically
             
             // Load armor images
             foreach (var armor in _outfitConfig.Armors)
@@ -626,7 +602,7 @@ namespace Oxide.Plugins
                 }
             }
             
-            Puts($"Loaded {_gunConfig.Guns.Count} gun images, {_gunConfig.Skins.Count} skin images, and {_outfitConfig.Armors.Count} armor images into ImageLibrary");
+            Puts($"Loaded {_gunConfig.Guns.Count} gun images and {_outfitConfig.Armors.Count} armor images into ImageLibrary");
         }
         
         private void Unload()
