@@ -39,12 +39,10 @@ namespace Oxide.Plugins
         private LobbyUI _lobbyUI;
         private LoadoutEditor _loadoutEditor;
         private AttachmentSystem _attachmentSystem;
-        private WeaponProgression _weaponProgression;
         private VFXManager _vfxManager;
         private SFXManager _sfxManager;
         private ForgeStationSystem _forgeStation;
         private BloodTokenEconomy _tokenEconomy;
-        private StoreAPI _storeAPI;
         private SaveManager _saveManager;
         private AntiExploit _antiExploit;
         private TelemetrySystem _telemetry;
@@ -439,15 +437,6 @@ namespace Oxide.Plugins
             [JsonProperty("Tokens Per Kill")]
             public int TokensPerKill { get; set; } = 10;
             
-            [JsonProperty("Enable Tebex Integration")]
-            public bool EnableTebex { get; set; } = false;
-            
-            [JsonProperty("Tebex Secret Key")]
-            public string TebexSecretKey { get; set; } = "YOUR_SECRET_KEY_HERE";
-            
-            [JsonProperty("Max Weapon Level")]
-            public int MaxWeaponLevel { get; set; } = 10;
-            
             [JsonProperty("Max Attachment Level")]
             public int MaxAttachmentLevel { get; set; } = 5;
             
@@ -506,13 +495,11 @@ namespace Oxide.Plugins
             _antiExploit = new AntiExploit(this);
             _tokenEconomy = new BloodTokenEconomy(this, _config);
             _attachmentSystem = new AttachmentSystem(this, _config);
-            _weaponProgression = new WeaponProgression(this, _config);
             _vfxManager = new VFXManager(this);
             _sfxManager = new SFXManager(this);
-            _forgeStation = new ForgeStationSystem(this, _config, _tokenEconomy, _attachmentSystem, _weaponProgression);
+            _forgeStation = new ForgeStationSystem(this, _config, _tokenEconomy, _attachmentSystem);
             _loadoutEditor = new LoadoutEditor(this, _attachmentSystem);
-            _storeAPI = new StoreAPI(this, _config, _tokenEconomy);
-            _lobbyUI = new LobbyUI(this, _loadoutEditor, _forgeStation, _storeAPI);
+            _lobbyUI = new LobbyUI(this, _loadoutEditor, _forgeStation, _tokenEconomy);
             _domeManager = new DomeManager(this, _config);
             _telemetry = new TelemetrySystem(this);
             
@@ -1124,7 +1111,7 @@ namespace Oxide.Plugins
                 return;
             }
             
-            if (_storeAPI.PurchaseItem(player.userID, itemId, cost))
+            if (_tokenEconomy.PurchaseItem(player.userID, itemId, cost))
             {
                 SendReply(player, $"Successfully purchased {itemId}!");
                 _saveManager.SavePlayerProfile(session.Profile);
@@ -1740,7 +1727,6 @@ namespace Oxide.Plugins
         {
             public ulong SteamID { get; set; }
             public List<Loadout> Loadouts { get; set; }
-            public Dictionary<string, int> WeaponLevels { get; set; }
             public Dictionary<string, int> AttachmentLevels { get; set; }
             public List<string> OwnedSkins { get; set; }
             public List<string> OwnedArmor { get; set; } // List of owned armor shortnames
@@ -1754,7 +1740,6 @@ namespace Oxide.Plugins
             public PlayerProfile()
             {
                 Loadouts = new List<Loadout>();
-                WeaponLevels = new Dictionary<string, int>();
                 AttachmentLevels = new Dictionary<string, int>();
                 OwnedSkins = new List<string>();
                 OwnedArmor = new List<string>();
@@ -1914,17 +1899,17 @@ namespace Oxide.Plugins
             private KillaDome _plugin;
             private LoadoutEditor _loadoutEditor;
             private ForgeStationSystem _forgeStation;
-            private StoreAPI _storeAPI;
+            private BloodTokenEconomy _tokenEconomy;
             
             private const string UI_MAIN = "KillaDome.Main";
             private const string UI_TAB_CONTAINER = "KillaDome.TabContainer";
             
-            internal LobbyUI(KillaDome plugin, LoadoutEditor loadoutEditor, ForgeStationSystem forgeStation, StoreAPI storeAPI)
+            internal LobbyUI(KillaDome plugin, LoadoutEditor loadoutEditor, ForgeStationSystem forgeStation, BloodTokenEconomy tokenEconomy)
             {
                 _plugin = plugin;
                 _loadoutEditor = loadoutEditor;
                 _forgeStation = forgeStation;
-                _storeAPI = storeAPI;
+                _tokenEconomy = tokenEconomy;
             }
             
             public void ShowLobbyUI(BasePlayer player)
@@ -3668,11 +3653,8 @@ namespace Oxide.Plugins
                         Name = "Silencer",
                         Slot = "barrel",
                         MaxLevel = 5,
-                        StatModifiers = new Dictionary<string, float>
-                        {
-                            ["noise_reduction"] = 0.8f,
-                            ["damage"] = -0.05f
-                        }
+                        VFXTag = "silencer_smoke",
+                        SFXTag = "silencer_sound"
                     },
                     ["extended_mag"] = new AttachmentDefinition
                     {
@@ -3680,11 +3662,8 @@ namespace Oxide.Plugins
                         Name = "Extended Magazine",
                         Slot = "mag",
                         MaxLevel = 5,
-                        StatModifiers = new Dictionary<string, float>
-                        {
-                            ["mag_size"] = 1.5f,
-                            ["reload_speed"] = -0.1f
-                        }
+                        VFXTag = "extended_mag_visual",
+                        SFXTag = "mag_sound"
                     },
                     ["reflex"] = new AttachmentDefinition
                     {
@@ -3692,10 +3671,8 @@ namespace Oxide.Plugins
                         Name = "Reflex Sight",
                         Slot = "optic",
                         MaxLevel = 3,
-                        StatModifiers = new Dictionary<string, float>
-                        {
-                            ["accuracy"] = 1.2f
-                        }
+                        VFXTag = "reflex_glow",
+                        SFXTag = "optic_sound"
                     }
                 };
             }
@@ -3705,39 +3682,6 @@ namespace Oxide.Plugins
                 _attachments.TryGetValue(attachmentId, out var attachment);
                 return attachment;
             }
-            
-            public Dictionary<string, float> CalculateWeaponStats(string weaponId, Dictionary<string, string> attachments)
-            {
-                var stats = new Dictionary<string, float>
-                {
-                    ["damage"] = 1.0f,
-                    ["fire_rate"] = 1.0f,
-                    ["accuracy"] = 1.0f,
-                    ["mag_size"] = 1.0f,
-                    ["reload_speed"] = 1.0f
-                };
-                
-                foreach (var attachment in attachments.Values)
-                {
-                    var def = GetAttachment(attachment);
-                    if (def != null)
-                    {
-                        foreach (var mod in def.StatModifiers)
-                        {
-                            if (stats.ContainsKey(mod.Key))
-                            {
-                                stats[mod.Key] *= mod.Value;
-                            }
-                            else
-                            {
-                                stats[mod.Key] = mod.Value;
-                            }
-                        }
-                    }
-                }
-                
-                return stats;
-            }
         }
         
         internal class AttachmentDefinition
@@ -3746,97 +3690,8 @@ namespace Oxide.Plugins
             public string Name { get; set; }
             public string Slot { get; set; }
             public int MaxLevel { get; set; }
-            public Dictionary<string, float> StatModifiers { get; set; }
             public string VFXTag { get; set; }
             public string SFXTag { get; set; }
-        }
-        
-        #endregion
-        
-        #region Module: WeaponProgression
-        
-        internal class WeaponProgression
-        {
-            private KillaDome _plugin;
-            private PluginConfig _config;
-            private Dictionary<string, WeaponDefinition> _weapons;
-            
-            internal WeaponProgression(KillaDome plugin, PluginConfig config)
-            {
-                _plugin = plugin;
-                _config = config;
-                InitializeWeapons();
-            }
-            
-            private void InitializeWeapons()
-            {
-                _weapons = new Dictionary<string, WeaponDefinition>
-                {
-                    ["ak47"] = new WeaponDefinition
-                    {
-                        Id = "ak47",
-                        Name = "AK-47",
-                        MaxLevel = 10,
-                        BaseStats = new Dictionary<string, float>
-                        {
-                            ["damage"] = 35f,
-                            ["fire_rate"] = 0.13f,
-                            ["accuracy"] = 0.75f
-                        }
-                    },
-                    ["m249"] = new WeaponDefinition
-                    {
-                        Id = "m249",
-                        Name = "M249",
-                        MaxLevel = 10,
-                        BaseStats = new Dictionary<string, float>
-                        {
-                            ["damage"] = 30f,
-                            ["fire_rate"] = 0.1f,
-                            ["accuracy"] = 0.7f
-                        }
-                    }
-                };
-            }
-            
-            public int GetWeaponLevel(ulong steamId, string weaponId)
-            {
-                var session = _plugin.GetSession(steamId);
-                if (session == null) return 0;
-                
-                session.Profile.WeaponLevels.TryGetValue(weaponId, out int level);
-                return level;
-            }
-            
-            public bool UpgradeWeapon(ulong steamId, string weaponId, int cost)
-            {
-                var session = _plugin.GetSession(steamId);
-                if (session == null) return false;
-                
-                int currentLevel = GetWeaponLevel(steamId, weaponId);
-                if (currentLevel >= _config.MaxWeaponLevel)
-                {
-                    return false;
-                }
-                
-                if (session.Profile.Tokens < cost)
-                {
-                    return false;
-                }
-                
-                session.Profile.Tokens -= cost;
-                session.Profile.WeaponLevels[weaponId] = currentLevel + 1;
-                
-                return true;
-            }
-        }
-        
-        internal class WeaponDefinition
-        {
-            public string Id { get; set; }
-            public string Name { get; set; }
-            public int MaxLevel { get; set; }
-            public Dictionary<string, float> BaseStats { get; set; }
         }
         
         #endregion
@@ -3889,16 +3744,14 @@ namespace Oxide.Plugins
             private PluginConfig _config;
             private BloodTokenEconomy _economy;
             private AttachmentSystem _attachmentSystem;
-            private WeaponProgression _weaponProgression;
             
             internal ForgeStationSystem(KillaDome plugin, PluginConfig config, BloodTokenEconomy economy, 
-                AttachmentSystem attachmentSystem, WeaponProgression weaponProgression)
+                AttachmentSystem attachmentSystem)
             {
                 _plugin = plugin;
                 _config = config;
                 _economy = economy;
                 _attachmentSystem = attachmentSystem;
-                _weaponProgression = weaponProgression;
             }
             
             public int CalculateUpgradeCost(int currentLevel)
@@ -3972,28 +3825,10 @@ namespace Oxide.Plugins
                 var session = _plugin.GetSession(steamId);
                 return session?.Profile.Tokens ?? 0;
             }
-        }
-        
-        #endregion
-        
-        #region Module: StoreAPI
-        
-        internal class StoreAPI
-        {
-            private KillaDome _plugin;
-            private PluginConfig _config;
-            private BloodTokenEconomy _economy;
-            
-            internal StoreAPI(KillaDome plugin, PluginConfig config, BloodTokenEconomy economy)
-            {
-                _plugin = plugin;
-                _config = config;
-                _economy = economy;
-            }
             
             public bool PurchaseItem(ulong steamId, string itemId, int cost)
             {
-                if (!_economy.SpendTokens(steamId, cost))
+                if (!SpendTokens(steamId, cost))
                 {
                     return false;
                 }
@@ -4005,20 +3840,6 @@ namespace Oxide.Plugins
                 _plugin.LogDebug($"Player {steamId} purchased {itemId} for {cost} tokens");
                 
                 return true;
-            }
-            
-            // Tebex integration stub
-            public void ProcessTebexPurchase(ulong steamId, string packageId, string transactionId)
-            {
-                if (!_config.EnableTebex)
-                {
-                    _plugin.PrintWarning("Tebex integration is disabled");
-                    return;
-                }
-                
-                // TODO: Verify purchase with Tebex API using secret key
-                // For now, just log
-                _plugin.LogDebug($"Processing Tebex purchase: {steamId}, {packageId}, {transactionId}");
             }
         }
         
