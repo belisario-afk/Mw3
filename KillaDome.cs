@@ -2214,7 +2214,7 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent { Png = (string)_plugin.ImageLibrary?.Call("GetImage", primaryImageUrl) },
-                        new CuiRectTransformComponent { AnchorMin = "0.25 0.35", AnchorMax = "0.75 0.80" }
+                        new CuiRectTransformComponent { AnchorMin = "0.3 0.3", AnchorMax = "0.7 0.7" }
                     }
                 });
                 
@@ -2277,7 +2277,7 @@ namespace Oxide.Plugins
                     Components =
                     {
                         new CuiRawImageComponent { Png = (string)_plugin.ImageLibrary?.Call("GetImage", secondaryImageUrl) },
-                        new CuiRectTransformComponent { AnchorMin = "0.25 0.35", AnchorMax = "0.75 0.80" }
+                        new CuiRectTransformComponent { AnchorMin = "0.3 0.3", AnchorMax = "0.7 0.7" }
                     }
                 });
                 
