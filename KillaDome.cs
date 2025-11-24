@@ -61,202 +61,26 @@ namespace Oxide.Plugins
         
         /// <summary>
         /// CENTRALIZED GUN AND IMAGE CONFIGURATION
-        /// This is the ONLY place you need to add/edit guns and their images!
+        /// Now loaded from external JSON files for easy management!
+        /// 
+        /// Files: 
+        /// - oxide/data/KillaDome/Guns.json - All weapon definitions
+        /// - oxide/data/KillaDome/GunSkins.json - All weapon skins
         /// 
         /// AUTOMATIC FEATURES:
-        /// - When you add a new gun to Guns dictionary, it automatically appears in the Loadout Tab
-        /// - When you add a new skin to Skins list, it automatically appears in the Store Tab
-        /// - No need to edit any other code - everything updates automatically!
+        /// - When you add a new gun to Guns.json, it automatically appears in the Loadout Tab
+        /// - When you add a new skin to GunSkins.json, it automatically appears in the Store Tab
+        /// - No need to edit plugin code - everything updates from JSON files!
         /// 
-        /// Changes here automatically apply to both Store Tab and Loadout Tab.
+        /// To reload changes: Use 'oxide.reload KillaDome' command
         /// </summary>
         public class GunConfig
         {
-            // ===== GUNS CONFIGURATION =====
-            // Add or modify guns here. Each gun needs:
-            // - Id: Internal identifier (lowercase, no spaces)
-            // - DisplayName: Name shown to players
-            // - RustItemShortname: The actual Rust item shortname
-            // - ImageUrl: Direct URL to the gun's image
+            [JsonProperty("Guns")]
+            public Dictionary<string, GunDefinition> Guns { get; set; } = new Dictionary<string, GunDefinition>();
             
-            public Dictionary<string, GunDefinition> Guns = new Dictionary<string, GunDefinition>
-            {
-                ["ak47"] = new GunDefinition
-                {
-                    Id = "ak47",
-                    DisplayName = "AK-47",
-                    RustItemShortname = "rifle.ak",
-                    ImageUrl = "https://i.imgur.com/YourAK47Image.png"
-                },
-                ["lr300"] = new GunDefinition
-                {
-                    Id = "lr300",
-                    DisplayName = "LR-300",
-                    RustItemShortname = "rifle.lr300",
-                    ImageUrl = "https://i.imgur.com/YourLR300Image.png"
-                },
-                ["m249"] = new GunDefinition
-                {
-                    Id = "m249",
-                    DisplayName = "M249",
-                    RustItemShortname = "lmg.m249",
-                    ImageUrl = "https://i.imgur.com/YourM249Image.png"
-                },
-                ["mp5"] = new GunDefinition
-                {
-                    Id = "mp5",
-                    DisplayName = "MP5A4",
-                    RustItemShortname = "smg.mp5",
-                    ImageUrl = "https://i.imgur.com/YourMP5Image.png"
-                },
-                ["thompson"] = new GunDefinition
-                {
-                    Id = "thompson",
-                    DisplayName = "Thompson",
-                    RustItemShortname = "smg.thompson",
-                    ImageUrl = "https://i.imgur.com/YourThompsonImage.png"
-                },
-                ["python"] = new GunDefinition
-                {
-                    Id = "python",
-                    DisplayName = "Python Revolver",
-                    RustItemShortname = "pistol.python",
-                    ImageUrl = "https://i.imgur.com/YourPythonImage.png"
-                },
-                ["bolt"] = new GunDefinition
-                {
-                    Id = "bolt",
-                    DisplayName = "Bolt Action Rifle",
-                    RustItemShortname = "rifle.bolt",
-                    ImageUrl = "https://i.imgur.com/YourBoltImage.png"
-                },
-                ["sarpistol"] = new GunDefinition
-                {
-                    Id = "sarpistol",
-                    DisplayName = "Semi-Auto Pistol",
-                    RustItemShortname = "pistol.semiauto",
-                    ImageUrl = "https://i.imgur.com/YourSARImage.png"
-                },
-                ["custom"] = new GunDefinition
-                {
-                    Id = "custom",
-                    DisplayName = "Custom SMG",
-                    RustItemShortname = "smg.2",
-                    ImageUrl = "https://i.imgur.com/YourCustomImage.png"
-                },
-                ["m39"] = new GunDefinition
-                {
-                    Id = "m39",
-                    DisplayName = "M39 Rifle",
-                    RustItemShortname = "rifle.m39",
-                    ImageUrl = "https://i.imgur.com/YourM39Image.png"
-                }
-            };
-            
-            // ===== SKINS CONFIGURATION =====
-            // Add or modify weapon skins here. Each skin needs:
-            // - Name: Display name for the skin
-            // - SkinId: Rust workshop skin ID or custom identifier
-            // - WeaponId: Which gun this skin is for (must match a gun Id above)
-            // - ImageUrl: Direct URL to the skin preview image
-            // - Cost: Price in Blood Tokens (default: 300)
-            // - Tag: Optional badge like "NEW", "POPULAR", "HOT" (default: "")
-            // - Rarity: Rarity tier like "Common", "Rare", "Epic", "Legendary" (default: "Common")
-            
-            public List<SkinDefinition> Skins = new List<SkinDefinition>
-            {
-                // AK-47 Skins
-                new SkinDefinition
-                {
-                    Name = "AK-47 Tempered",
-                    SkinId = "3602286295",
-                    WeaponId = "ak47",
-                    ImageUrl = "https://i.imgur.com/YourAK47TemperedSkin.png",
-                    Cost = 650,
-                    Tag = "NEW",
-                    Rarity = "Legendary"
-                },
-                new SkinDefinition
-                {
-                    Name = "AK-47 Neon",
-                    SkinId = "3102802323",
-                    WeaponId = "ak47",
-                    ImageUrl = "https://i.imgur.com/YourAK47NeonSkin.png",
-                    Cost = 500,
-                    Tag = "POPULAR",
-                    Rarity = "Epic"
-                },
-                new SkinDefinition
-                {
-                    Name = "AK-47 Classic",
-                    SkinId = "skin_ak47_classic",
-                    WeaponId = "ak47",
-                    ImageUrl = "https://i.imgur.com/YourAK47ClassicSkin.png",
-                    Cost = 400,
-                    Tag = "",
-                    Rarity = "Rare"
-                },
-                
-                // M249 Skins
-                new SkinDefinition
-                {
-                    Name = "M249 Chrome",
-                    SkinId = "skin_m249_chrome",
-                    WeaponId = "m249",
-                    ImageUrl = "https://i.imgur.com/YourM249ChromeSkin.png",
-                    Cost = 450,
-                    Tag = "",
-                    Rarity = "Epic"
-                },
-                
-                // Pistol Skins
-                new SkinDefinition
-                {
-                    Name = "Pistol Black",
-                    SkinId = "skin_pistol_black",
-                    WeaponId = "pistol",
-                    ImageUrl = "https://i.imgur.com/YourPistolBlackSkin.png",
-                    Cost = 250,
-                    Tag = "",
-                    Rarity = "Common"
-                },
-                
-                // LR-300 Skins
-                new SkinDefinition
-                {
-                    Name = "LR-300 Gold",
-                    SkinId = "skin_lr300_gold",
-                    WeaponId = "lr300",
-                    ImageUrl = "https://i.imgur.com/YourLR300GoldSkin.png",
-                    Cost = 600,
-                    Tag = "",
-                    Rarity = "Legendary"
-                },
-                
-                // MP5 Skins
-                new SkinDefinition
-                {
-                    Name = "MP5 Tactical",
-                    SkinId = "skin_mp5_tactical",
-                    WeaponId = "mp5",
-                    ImageUrl = "https://i.imgur.com/YourMP5TacticalSkin.png",
-                    Cost = 350,
-                    Tag = "",
-                    Rarity = "Rare"
-                },
-                
-                // Example: Add a new skin here and it will automatically appear in Store Tab!
-                new SkinDefinition
-                {
-                    Name = "Thompson Dragon",
-                    SkinId = "skin_thompson_dragon",
-                    WeaponId = "thompson",
-                    ImageUrl = "https://i.imgur.com/YourThompsonDragonSkin.png",
-                    Cost = 550,
-                    Tag = "HOT",
-                    Rarity = "Epic"
-                }
-            };
+            [JsonProperty("Skins")]
+            public List<SkinDefinition> Skins { get; set; } = new List<SkinDefinition>();
             
             // ===== HELPER METHODS =====
             
@@ -280,6 +104,172 @@ namespace Oxide.Plugins
             {
                 return Skins.Where(s => s.WeaponId == weaponId).ToArray();
             }
+            
+            // ===== DEFAULT CONFIGURATION =====
+            public static GunConfig CreateDefault()
+            {
+                var config = new GunConfig();
+                
+                config.Guns = new Dictionary<string, GunDefinition>
+                {
+                    ["ak47"] = new GunDefinition
+                    {
+                        Id = "ak47",
+                        DisplayName = "AK-47",
+                        RustItemShortname = "rifle.ak",
+                        ImageUrl = "https://i.imgur.com/YourAK47Image.png"
+                    },
+                    ["lr300"] = new GunDefinition
+                    {
+                        Id = "lr300",
+                        DisplayName = "LR-300",
+                        RustItemShortname = "rifle.lr300",
+                        ImageUrl = "https://i.imgur.com/YourLR300Image.png"
+                    },
+                    ["m249"] = new GunDefinition
+                    {
+                        Id = "m249",
+                        DisplayName = "M249",
+                        RustItemShortname = "lmg.m249",
+                        ImageUrl = "https://i.imgur.com/YourM249Image.png"
+                    },
+                    ["mp5"] = new GunDefinition
+                    {
+                        Id = "mp5",
+                        DisplayName = "MP5A4",
+                        RustItemShortname = "smg.mp5",
+                        ImageUrl = "https://i.imgur.com/YourMP5Image.png"
+                    },
+                    ["thompson"] = new GunDefinition
+                    {
+                        Id = "thompson",
+                        DisplayName = "Thompson",
+                        RustItemShortname = "smg.thompson",
+                        ImageUrl = "https://i.imgur.com/YourThompsonImage.png"
+                    },
+                    ["python"] = new GunDefinition
+                    {
+                        Id = "python",
+                        DisplayName = "Python Revolver",
+                        RustItemShortname = "pistol.python",
+                        ImageUrl = "https://i.imgur.com/YourPythonImage.png"
+                    },
+                    ["bolt"] = new GunDefinition
+                    {
+                        Id = "bolt",
+                        DisplayName = "Bolt Action Rifle",
+                        RustItemShortname = "rifle.bolt",
+                        ImageUrl = "https://i.imgur.com/YourBoltImage.png"
+                    },
+                    ["sarpistol"] = new GunDefinition
+                    {
+                        Id = "sarpistol",
+                        DisplayName = "Semi-Auto Pistol",
+                        RustItemShortname = "pistol.semiauto",
+                        ImageUrl = "https://i.imgur.com/YourSARImage.png"
+                    },
+                    ["custom"] = new GunDefinition
+                    {
+                        Id = "custom",
+                        DisplayName = "Custom SMG",
+                        RustItemShortname = "smg.2",
+                        ImageUrl = "https://i.imgur.com/YourCustomImage.png"
+                    },
+                    ["m39"] = new GunDefinition
+                    {
+                        Id = "m39",
+                        DisplayName = "M39 Rifle",
+                        RustItemShortname = "rifle.m39",
+                        ImageUrl = "https://i.imgur.com/YourM39Image.png"
+                    }
+                };
+                
+                config.Skins = new List<SkinDefinition>
+                {
+                    new SkinDefinition
+                    {
+                        Name = "AK-47 Tempered",
+                        SkinId = "3602286295",
+                        WeaponId = "ak47",
+                        ImageUrl = "https://i.imgur.com/YourAK47TemperedSkin.png",
+                        Cost = 650,
+                        Tag = "NEW",
+                        Rarity = "Legendary"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "AK-47 Neon",
+                        SkinId = "3102802323",
+                        WeaponId = "ak47",
+                        ImageUrl = "https://i.imgur.com/YourAK47NeonSkin.png",
+                        Cost = 500,
+                        Tag = "POPULAR",
+                        Rarity = "Epic"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "AK-47 Classic",
+                        SkinId = "skin_ak47_classic",
+                        WeaponId = "ak47",
+                        ImageUrl = "https://i.imgur.com/YourAK47ClassicSkin.png",
+                        Cost = 400,
+                        Tag = "",
+                        Rarity = "Rare"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "M249 Chrome",
+                        SkinId = "skin_m249_chrome",
+                        WeaponId = "m249",
+                        ImageUrl = "https://i.imgur.com/YourM249ChromeSkin.png",
+                        Cost = 450,
+                        Tag = "",
+                        Rarity = "Epic"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "Pistol Black",
+                        SkinId = "skin_pistol_black",
+                        WeaponId = "pistol",
+                        ImageUrl = "https://i.imgur.com/YourPistolBlackSkin.png",
+                        Cost = 250,
+                        Tag = "",
+                        Rarity = "Common"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "LR-300 Gold",
+                        SkinId = "skin_lr300_gold",
+                        WeaponId = "lr300",
+                        ImageUrl = "https://i.imgur.com/YourLR300GoldSkin.png",
+                        Cost = 600,
+                        Tag = "",
+                        Rarity = "Legendary"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "MP5 Tactical",
+                        SkinId = "skin_mp5_tactical",
+                        WeaponId = "mp5",
+                        ImageUrl = "https://i.imgur.com/YourMP5TacticalSkin.png",
+                        Cost = 350,
+                        Tag = "",
+                        Rarity = "Rare"
+                    },
+                    new SkinDefinition
+                    {
+                        Name = "Thompson Dragon",
+                        SkinId = "skin_thompson_dragon",
+                        WeaponId = "thompson",
+                        ImageUrl = "https://i.imgur.com/YourThompsonDragonSkin.png",
+                        Cost = 550,
+                        Tag = "HOT",
+                        Rarity = "Epic"
+                    }
+                };
+                
+                return config;
+            }
         }
         
         public class GunDefinition
@@ -302,104 +292,115 @@ namespace Oxide.Plugins
         }
         
         // ===== OUTFIT/ARMOR CONFIGURATION =====
+        /// <summary>
+        /// Armor/Outfit configuration now loaded from external JSON file
+        /// File: oxide/data/KillaDome/Armor.json
+        /// Edit the JSON file to add/remove armor pieces without touching code!
+        /// </summary>
         public class OutfitConfig
         {
-            public List<ArmorItem> Armors = new List<ArmorItem>
-            {
-                // Head Armor
-                new ArmorItem
-                {
-                    Name = "Metal Facemask",
-                    ItemShortname = "metal.facemask",
-                    Slot = "head",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/mVY2Uav.png",
-                    Cost = 300,
-                    Rarity = "Common"
-                },
-                new ArmorItem
-                {
-                    Name = "Coffee Can Helmet",
-                    ItemShortname = "coffeecan.helmet",
-                    Slot = "head",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourCoffeeCanImage.png",
-                    Cost = 250,
-                    Rarity = "Common"
-                },
-                
-                // Chest Armor
-                new ArmorItem
-                {
-                    Name = "Metal Chest Plate",
-                    ItemShortname = "metal.plate.torso",
-                    Slot = "chest",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourMetalChestImage.png",
-                    Cost = 400,
-                    Rarity = "Rare"
-                },
-                new ArmorItem
-                {
-                    Name = "Road Sign Jacket",
-                    ItemShortname = "roadsign.jacket",
-                    Slot = "chest",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourRoadSignImage.png",
-                    Cost = 300,
-                    Rarity = "Common"
-                },
-                
-                // Legs Armor
-                new ArmorItem
-                {
-                    Name = "Heavy Plate Pants",
-                    ItemShortname = "heavy.plate.pants",
-                    Slot = "legs",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourHeavyPantsImage.png",
-                    Cost = 400,
-                    Rarity = "Rare"
-                },
-                new ArmorItem
-                {
-                    Name = "Road Sign Kilt",
-                    ItemShortname = "roadsign.kilt",
-                    Slot = "legs",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourRoadSignKiltImage.png",
-                    Cost = 300,
-                    Rarity = "Common"
-                },
-                
-                // Hands/Gloves
-                new ArmorItem
-                {
-                    Name = "Tactical Gloves",
-                    ItemShortname = "tactical.gloves",
-                    Slot = "hands",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourTacticalGlovesImage.png",
-                    Cost = 200,
-                    Rarity = "Common"
-                },
-                
-                // Feet/Boots
-                new ArmorItem
-                {
-                    Name = "Heavy Plate Boots",
-                    ItemShortname = "shoes.boots",
-                    Slot = "feet",
-                    SkinId = "0",
-                    ImageUrl = "https://i.imgur.com/YourBootsImage.png",
-                    Cost = 250,
-                    Rarity = "Common"
-                }
-            };
+            [JsonProperty("Armors")]
+            public List<ArmorItem> Armors { get; set; } = new List<ArmorItem>();
             
             public ArmorItem[] GetArmorsBySlot(string slot)
             {
                 return Armors.Where(a => a.Slot == slot).ToArray();
+            }
+            
+            // ===== DEFAULT CONFIGURATION =====
+            public static OutfitConfig CreateDefault()
+            {
+                var config = new OutfitConfig();
+                config.Armors = new List<ArmorItem>
+                {
+                    // Head Armor
+                    new ArmorItem
+                    {
+                        Name = "Metal Facemask",
+                        ItemShortname = "metal.facemask",
+                        Slot = "head",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/mVY2Uav.png",
+                        Cost = 300,
+                        Rarity = "Common"
+                    },
+                    new ArmorItem
+                    {
+                        Name = "Coffee Can Helmet",
+                        ItemShortname = "coffeecan.helmet",
+                        Slot = "head",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourCoffeeCanImage.png",
+                        Cost = 250,
+                        Rarity = "Common"
+                    },
+                    // Chest Armor
+                    new ArmorItem
+                    {
+                        Name = "Metal Chest Plate",
+                        ItemShortname = "metal.plate.torso",
+                        Slot = "chest",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourMetalChestImage.png",
+                        Cost = 400,
+                        Rarity = "Rare"
+                    },
+                    new ArmorItem
+                    {
+                        Name = "Road Sign Jacket",
+                        ItemShortname = "roadsign.jacket",
+                        Slot = "chest",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourRoadSignImage.png",
+                        Cost = 300,
+                        Rarity = "Common"
+                    },
+                    // Legs Armor
+                    new ArmorItem
+                    {
+                        Name = "Heavy Plate Pants",
+                        ItemShortname = "heavy.plate.pants",
+                        Slot = "legs",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourHeavyPantsImage.png",
+                        Cost = 400,
+                        Rarity = "Rare"
+                    },
+                    new ArmorItem
+                    {
+                        Name = "Road Sign Kilt",
+                        ItemShortname = "roadsign.kilt",
+                        Slot = "legs",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourRoadSignKiltImage.png",
+                        Cost = 300,
+                        Rarity = "Common"
+                    },
+                    // Hands/Gloves
+                    new ArmorItem
+                    {
+                        Name = "Tactical Gloves",
+                        ItemShortname = "tactical.gloves",
+                        Slot = "hands",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourTacticalGlovesImage.png",
+                        Cost = 200,
+                        Rarity = "Common"
+                    },
+                    // Feet/Boots
+                    new ArmorItem
+                    {
+                        Name = "Heavy Plate Boots",
+                        ItemShortname = "shoes.boots",
+                        Slot = "feet",
+                        SkinId = "0",
+                        ImageUrl = "https://i.imgur.com/YourBootsImage.png",
+                        Cost = 250,
+                        Rarity = "Common"
+                    }
+                };
+                
+                return config;
             }
         }
         
@@ -477,6 +478,82 @@ namespace Oxide.Plugins
         
         protected override void SaveConfig() => Config.WriteObject(_config, true);
         
+        // ===== LOAD EXTERNAL DATA CONFIGURATIONS =====
+        
+        private GunConfig LoadGunConfig()
+        {
+            string dataDirectory = Path.Combine(Interface.Oxide.DataDirectory, "KillaDome");
+            string filePath = Path.Combine(dataDirectory, "Guns.json");
+            
+            if (!Directory.Exists(dataDirectory))
+            {
+                Directory.CreateDirectory(dataDirectory);
+            }
+            
+            if (!File.Exists(filePath))
+            {
+                Puts("Guns.json not found. Creating default configuration...");
+                var defaultConfig = GunConfig.CreateDefault();
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(defaultConfig, Formatting.Indented));
+                return defaultConfig;
+            }
+            
+            try
+            {
+                string json = File.ReadAllText(filePath);
+                var config = JsonConvert.DeserializeObject<GunConfig>(json);
+                if (config == null || config.Guns == null || config.Skins == null)
+                {
+                    PrintWarning("Guns.json is invalid. Using defaults...");
+                    return GunConfig.CreateDefault();
+                }
+                Puts($"Loaded {config.Guns.Count} guns and {config.Skins.Count} skins from Guns.json");
+                return config;
+            }
+            catch (Exception ex)
+            {
+                PrintError($"Failed to load Guns.json: {ex.Message}. Using defaults...");
+                return GunConfig.CreateDefault();
+            }
+        }
+        
+        private OutfitConfig LoadOutfitConfig()
+        {
+            string dataDirectory = Path.Combine(Interface.Oxide.DataDirectory, "KillaDome");
+            string filePath = Path.Combine(dataDirectory, "Armor.json");
+            
+            if (!Directory.Exists(dataDirectory))
+            {
+                Directory.CreateDirectory(dataDirectory);
+            }
+            
+            if (!File.Exists(filePath))
+            {
+                Puts("Armor.json not found. Creating default configuration...");
+                var defaultConfig = OutfitConfig.CreateDefault();
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(defaultConfig, Formatting.Indented));
+                return defaultConfig;
+            }
+            
+            try
+            {
+                string json = File.ReadAllText(filePath);
+                var config = JsonConvert.DeserializeObject<OutfitConfig>(json);
+                if (config == null || config.Armors == null)
+                {
+                    PrintWarning("Armor.json is invalid. Using defaults...");
+                    return OutfitConfig.CreateDefault();
+                }
+                Puts($"Loaded {config.Armors.Count} armor pieces from Armor.json");
+                return config;
+            }
+            catch (Exception ex)
+            {
+                PrintError($"Failed to load Armor.json: {ex.Message}. Using defaults...");
+                return OutfitConfig.CreateDefault();
+            }
+        }
+        
         #endregion
         
         #region Oxide Hooks
@@ -486,9 +563,9 @@ namespace Oxide.Plugins
             permission.RegisterPermission(PERMISSION_ADMIN, this);
             permission.RegisterPermission(PERMISSION_VIP, this);
             
-            // Initialize gun configuration
-            _gunConfig = new GunConfig();
-            _outfitConfig = new OutfitConfig();
+            // Load configurations from JSON files
+            _gunConfig = LoadGunConfig();
+            _outfitConfig = LoadOutfitConfig();
             
             // Initialize all systems
             _saveManager = new SaveManager(this, _config);
