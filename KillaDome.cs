@@ -1546,7 +1546,7 @@ namespace Oxide.Plugins
             if (skinId == "0")
             {
                 session.Profile.OwnedSkins.Add(skinId);
-                _saveManager.SaveProfile(player.userID, session.Profile);
+                _saveManager.SavePlayerProfile(session.Profile);
                 player.ChatMessage("Default skin equipped!");
                 _lobbyUI.ShowLobbyUIWithTab(player, "store");
                 return;
@@ -1572,7 +1572,7 @@ namespace Oxide.Plugins
             // Purchase skin
             session.Profile.Tokens -= skinCost;
             session.Profile.OwnedSkins.Add(skinId);
-            _saveManager.SaveProfile(player.userID, session.Profile);
+            _saveManager.SavePlayerProfile(session.Profile);
             
             player.ChatMessage($"✓ Purchased skin {skinId} for {gun.DisplayName}! ({skinCost} tokens)");
             _telemetry.RecordPurchase(player.userID, $"skin_{skinId}", skinCost);
