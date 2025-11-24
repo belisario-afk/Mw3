@@ -2787,7 +2787,6 @@ namespace Oxide.Plugins
                     RectTransform = { AnchorMin = "0.05 0.15", AnchorMax = "0.95 0.85" }
                 }, "LoadoutFooter");
             }
-            }
             
             private void ShowOutfitEditorContent(CuiElementContainer container, BasePlayer player, PlayerSession session, Loadout loadout)
             {
