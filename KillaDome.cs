@@ -61,16 +61,15 @@ namespace Oxide.Plugins
         
         /// <summary>
         /// CENTRALIZED GUN AND IMAGE CONFIGURATION
-        /// Now loaded from external JSON files for easy management!
+        /// Now loaded from external JSON file for easy management!
         /// 
-        /// Files: 
-        /// - oxide/data/KillaDome/Guns.json - All weapon definitions
-        /// - oxide/data/KillaDome/GunSkins.json - All weapon skins
+        /// File: 
+        /// - oxide/data/KillaDome/Guns.json - All weapon definitions and skins
         /// 
         /// AUTOMATIC FEATURES:
         /// - When you add a new gun to Guns.json, it automatically appears in the Loadout Tab
-        /// - When you add a new skin to GunSkins.json, it automatically appears in the Store Tab
-        /// - No need to edit plugin code - everything updates from JSON files!
+        /// - When you add a new skin to Guns.json, it automatically appears in the Store Tab
+        /// - No need to edit plugin code - everything updates from JSON file!
         /// 
         /// To reload changes: Use 'oxide.reload KillaDome' command
         /// </summary>
