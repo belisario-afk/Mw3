@@ -227,9 +227,9 @@ namespace Oxide.Plugins
                     },
                     new SkinDefinition
                     {
-                        Name = "Pistol Black",
+                        Name = "Python Black",
                         SkinId = "skin_pistol_black",
-                        WeaponId = "pistol",
+                        WeaponId = "python",
                         ImageUrl = "https://i.imgur.com/YourPistolBlackSkin.png",
                         Cost = 250,
                         Tag = "",
