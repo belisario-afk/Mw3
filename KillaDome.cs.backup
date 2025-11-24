@@ -2327,7 +2327,7 @@ namespace Oxide.Plugins
                 bool isWeaponsActive = selectedLoadoutTab == "weapons";
                 container.Add(new CuiButton
                 {
-                    Button = { Command = "killadome.loadouttab weapons", Color = isWeaponsActive ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9" },
+                    Button = { Command = "killadome.loadouttab weapons", Color = isWeaponsActive ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.16 0.9" },
                     Text = { Text = "⚔ WEAPONS", FontSize = 12, Align = TextAnchor.MiddleCenter, Color = isWeaponsActive ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.02 0.1", AnchorMax = "0.35 0.9" }
                 }, "LoadoutSubTabs");
@@ -2336,7 +2336,7 @@ namespace Oxide.Plugins
                 bool isOutfitActive = selectedLoadoutTab == "outfit";
                 container.Add(new CuiButton
                 {
-                    Button = { Command = "killadome.loadouttab outfit", Color = isOutfitActive ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9" },
+                    Button = { Command = "killadome.loadouttab outfit", Color = isOutfitActive ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.16 0.9" },
                     Text = { Text = "👕 OUTFIT", FontSize = 12, Align = TextAnchor.MiddleCenter, Color = isOutfitActive ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.37 0.1", AnchorMax = "0.70 0.9" }
                 }, "LoadoutSubTabs");
@@ -2371,7 +2371,7 @@ namespace Oxide.Plugins
                 // PRIMARY WEAPON
                 container.Add(new CuiPanel
                 {
-                    Image = { Color = "0.1 0.3 0.15 0.95" },
+                    Image = { Color = "0.12 0.12 0.16 0.95" },
                     RectTransform = { AnchorMin = "0.02 0.05", AnchorMax = "0.49 0.88" }
                 }, "WeaponSelection", "PrimaryBox");
                 
@@ -2419,14 +2419,14 @@ namespace Oxide.Plugins
                 
                 container.Add(new CuiButton
                 {
-                    Button = { Command = "killadome.weapon.prev primary", Color = "0.2 0.6 0.3 0.9" },
+                    Button = { Command = "killadome.weapon.prev primary", Color = "0.2 0.6 0.8 0.9" },
                     Text = { Text = "< PREV", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
                     RectTransform = { AnchorMin = "0.05 0.06", AnchorMax = "0.47 0.22" }
                 }, "PrimaryBox");
                 
                 container.Add(new CuiButton
                 {
-                    Button = { Command = "killadome.weapon.next primary", Color = "0.2 0.6 0.3 0.9" },
+                    Button = { Command = "killadome.weapon.next primary", Color = "0.2 0.6 0.8 0.9" },
                     Text = { Text = "NEXT >", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
                     RectTransform = { AnchorMin = "0.53 0.06", AnchorMax = "0.95 0.22" }
                 }, "PrimaryBox");
@@ -2434,7 +2434,7 @@ namespace Oxide.Plugins
                 // SECONDARY WEAPON
                 container.Add(new CuiPanel
                 {
-                    Image = { Color = "0.1 0.3 0.15 0.95" },
+                    Image = { Color = "0.12 0.12 0.16 0.95" },
                     RectTransform = { AnchorMin = "0.51 0.05", AnchorMax = "0.98 0.88" }
                 }, "WeaponSelection", "SecondaryBox");
                 
@@ -2511,14 +2511,14 @@ namespace Oxide.Plugins
                 
                 container.Add(new CuiButton
                 {
-                    Button = { Command = "killadome.editweapon primary", Color = isPrimaryActive ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9" },
+                    Button = { Command = "killadome.editweapon primary", Color = isPrimaryActive ? "0.2 0.6 0.8 0.9" : "0.15 0.15 0.18 0.9" },
                     Text = { Text = "PRIMARY", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = isPrimaryActive ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.72 0.96", AnchorMax = "0.84 1" }
                 }, "EditorArea");
                 
                 container.Add(new CuiButton
                 {
-                    Button = { Command = "killadome.editweapon secondary", Color = !isPrimaryActive ? "0.5 0.3 0.8 0.9" : "0.1 0.3 0.15 0.9" },
+                    Button = { Command = "killadome.editweapon secondary", Color = !isPrimaryActive ? "0.5 0.3 0.8 0.9" : "0.15 0.15 0.18 0.9" },
                     Text = { Text = "SECONDARY", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = !isPrimaryActive ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.85 0.96", AnchorMax = "0.98 1" }
                 }, "EditorArea");
@@ -2618,7 +2618,7 @@ namespace Oxide.Plugins
                     {
                         container.Add(new CuiButton
                         {
-                            Button = { Command = $"killadome.applyskin {editingSlot} {skinId}", Color = "0.2 0.6 0.3 0.9" },
+                            Button = { Command = $"killadome.applyskin {editingSlot} {skinId}", Color = "0.2 0.6 0.8 0.9" },
                             Text = { Text = "EQUIP", FontSize = 9, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
                             RectTransform = { AnchorMin = "0.40 0.10", AnchorMax = "0.95 0.40" }
                         }, $"SkinCard_{i}");
@@ -2669,7 +2669,7 @@ namespace Oxide.Plugins
                     
                     container.Add(new CuiButton
                     {
-                        Button = { Command = $"killadome.attachcat {categoryCommand}", Color = isSelected ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9" },
+                        Button = { Command = $"killadome.attachcat {categoryCommand}", Color = isSelected ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.15 0.9" },
                         Text = { Text = categories[categoryIndex], FontSize = 9, Align = TextAnchor.MiddleCenter, Color = isSelected ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                         RectTransform = { AnchorMin = $"{xMin} 0.91", AnchorMax = $"{xMax} 0.95" }
                     }, "AttachmentsPanel");
@@ -2773,7 +2773,7 @@ namespace Oxide.Plugins
                     {
                         container.Add(new CuiButton
                         {
-                            Button = { Command = $"killadome.applyattachment {editingSlot} {att.Category} {att.Id}", Color = "0.2 0.6 0.3 0.9" },
+                            Button = { Command = $"killadome.applyattachment {editingSlot} {att.Category} {att.Id}", Color = "0.2 0.6 0.8 0.9" },
                             Text = { Text = "EQUIP", FontSize = 9, Align = TextAnchor.MiddleCenter, Color = "1 1 1 1" },
                             RectTransform = { AnchorMin = "0.40 0.10", AnchorMax = "0.95 0.40" }
                         }, $"AttCard_{i}");
@@ -3048,7 +3048,7 @@ namespace Oxide.Plugins
                 bool isGunsSelected = selectedCategory == "guns";
                 container.Add(new CuiButton
                 {
-                    Button = { Color = isGunsSelected ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9", Command = "killadome.storecat guns" },
+                    Button = { Color = isGunsSelected ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.15 0.9", Command = "killadome.storecat guns" },
                     Text = { Text = "⚔ GUN STORE", FontSize = 14, Align = TextAnchor.MiddleCenter, Color = isGunsSelected ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.02 0.1", AnchorMax = "0.24 0.9" }
                 }, "StoreSubTabs");
@@ -3057,7 +3057,7 @@ namespace Oxide.Plugins
                 bool isSkinsSelected = selectedCategory == "skins";
                 container.Add(new CuiButton
                 {
-                    Button = { Color = isSkinsSelected ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9", Command = "killadome.storecat skins" },
+                    Button = { Color = isSkinsSelected ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.15 0.9", Command = "killadome.storecat skins" },
                     Text = { Text = "🎨 SKINS STORE", FontSize = 14, Align = TextAnchor.MiddleCenter, Color = isSkinsSelected ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.26 0.1", AnchorMax = "0.48 0.9" }
                 }, "StoreSubTabs");
@@ -3066,7 +3066,7 @@ namespace Oxide.Plugins
                 bool isOutfitsSelected = selectedCategory == "outfits";
                 container.Add(new CuiButton
                 {
-                    Button = { Color = isOutfitsSelected ? "0.2 0.6 0.3 0.9" : "0.1 0.3 0.15 0.9", Command = "killadome.storecat outfits" },
+                    Button = { Color = isOutfitsSelected ? "0.2 0.6 0.8 0.9" : "0.12 0.12 0.15 0.9", Command = "killadome.storecat outfits" },
                     Text = { Text = "👕 OUTFIT STORE", FontSize = 14, Align = TextAnchor.MiddleCenter, Color = isOutfitsSelected ? "1 1 1 1" : "0.6 0.6 0.6 1" },
                     RectTransform = { AnchorMin = "0.50 0.1", AnchorMax = "0.72 0.9" }
                 }, "StoreSubTabs");
@@ -3171,7 +3171,7 @@ namespace Oxide.Plugins
                     
                     container.Add(new CuiPanel
                     {
-                        Image = { Color = "0.1 0.3 0.15 0.95" },
+                        Image = { Color = "0.12 0.12 0.16 0.95" },
                         RectTransform = { AnchorMin = $"0.02 {yMin}", AnchorMax = $"0.98 {yMax}" }
                     }, "BaseGunsSection", cardName);
                     
@@ -3238,7 +3238,7 @@ namespace Oxide.Plugins
                     bool canGoPrev = currentPage > 0;
                     container.Add(new CuiButton
                     {
-                        Button = { Color = canGoPrev ? "0.2 0.6 0.3 0.9" : "0.3 0.3 0.3 0.5", Command = canGoPrev ? "killadome.storepage prev" : "" },
+                        Button = { Color = canGoPrev ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoPrev ? "killadome.storepage prev" : "" },
                         Text = { Text = "◀ PREV", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canGoPrev ? "1 1 1 1" : "0.5 0.5 0.5 1" },
                         RectTransform = { AnchorMin = "0.02 0.01", AnchorMax = "0.32 0.05" }
                     }, "BaseGunsSection");
@@ -3246,7 +3246,7 @@ namespace Oxide.Plugins
                     bool canGoNext = currentPage < totalPages - 1;
                     container.Add(new CuiButton
                     {
-                        Button = { Color = canGoNext ? "0.2 0.6 0.3 0.9" : "0.3 0.3 0.3 0.5", Command = canGoNext ? "killadome.storepage next" : "" },
+                        Button = { Color = canGoNext ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoNext ? "killadome.storepage next" : "" },
                         Text = { Text = "NEXT ▶", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canGoNext ? "1 1 1 1" : "0.5 0.5 0.5 1" },
                         RectTransform = { AnchorMin = "0.68 0.01", AnchorMax = "0.98 0.05" }
                     }, "BaseGunsSection");
@@ -3371,7 +3371,7 @@ namespace Oxide.Plugins
                     
                     // Buy button
                     bool canAfford = session.Profile.Tokens >= item.Cost;
-                    string btnColor = canAfford ? "0.2 0.6 0.3" : "0.25 0.25 0.25";
+                    string btnColor = canAfford ? "0.2 0.6 0.8" : "0.25 0.25 0.25";
                     string btnText = canAfford ? "BUY" : "🔒";
                     
                     container.Add(new CuiButton
@@ -3461,7 +3461,7 @@ namespace Oxide.Plugins
                 // ===== SELECTED GUN DISPLAY =====
                 container.Add(new CuiPanel
                 {
-                    Image = { Color = "0.1 0.3 0.15 0.8" },
+                    Image = { Color = "0.12 0.12 0.16 0.8" },
                     RectTransform = { AnchorMin = "0 0.81", AnchorMax = "1 0.87" }
                 }, "SkinsStoreSection", "SelectedGunBar");
                 
@@ -3605,7 +3605,7 @@ namespace Oxide.Plugins
                     bool canGoPrev = currentPage > 0;
                     container.Add(new CuiButton
                     {
-                        Button = { Color = canGoPrev ? "0.2 0.6 0.3 0.9" : "0.3 0.3 0.3 0.5", Command = canGoPrev ? "killadome.storepage skins prev" : "" },
+                        Button = { Color = canGoPrev ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoPrev ? "killadome.storepage skins prev" : "" },
                         Text = { Text = "◀ PREV", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canGoPrev ? "1 1 1 1" : "0.5 0.5 0.5 1" },
                         RectTransform = { AnchorMin = "0.02 0.01", AnchorMax = "0.20 0.05" }
                     }, "SkinsStoreSection");
@@ -3613,7 +3613,7 @@ namespace Oxide.Plugins
                     bool canGoNext = currentPage < totalPages - 1;
                     container.Add(new CuiButton
                     {
-                        Button = { Color = canGoNext ? "0.2 0.6 0.3 0.9" : "0.3 0.3 0.3 0.5", Command = canGoNext ? "killadome.storepage skins next" : "" },
+                        Button = { Color = canGoNext ? "0.2 0.6 0.8 0.9" : "0.3 0.3 0.3 0.5", Command = canGoNext ? "killadome.storepage skins next" : "" },
                         Text = { Text = "NEXT ▶", FontSize = 10, Align = TextAnchor.MiddleCenter, Color = canGoNext ? "1 1 1 1" : "0.5 0.5 0.5 1" },
                         RectTransform = { AnchorMin = "0.80 0.01", AnchorMax = "0.98 0.05" }
                     }, "SkinsStoreSection");
@@ -3749,7 +3749,7 @@ namespace Oxide.Plugins
                     
                     // Buy button
                     bool canAfford = session.Profile.Tokens >= armor.Cost;
-                    string btnColor = canAfford ? "0.2 0.6 0.3" : "0.3 0.3 0.3";
+                    string btnColor = canAfford ? "0.7 0.2 0.5" : "0.3 0.3 0.3";
                     string btnText = canAfford ? "BUY" : "🔒";
                     
                     container.Add(new CuiButton
